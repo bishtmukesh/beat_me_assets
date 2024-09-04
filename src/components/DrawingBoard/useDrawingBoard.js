@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import PropTypes from 'prop-types';
 
-import { DEFAULT_DRAWING_COLOR, DEFAULT_PENCIL_SIZE, DEFAULT_TOOL, DRAWING_UPDATE_TYPES, LINE_CAP, LINE_JOIN, TOOL_TYPES } from '../../constant/drawingBoard';
+import { DEFAULT_DRAWING_COLOR, DEFAULT_PENCIL_SIZE, DEFAULT_TOOL, DRAWING_UPDATE_TYPES, LINE_CAP, LINE_JOIN, MAXIMUM_PENCIL_SIZE, MINIMUM_PENCIL_SIZE, TOOL_TYPES } from '../../constant/drawingBoard';
 import { MESSAGE_TYPES } from '../../constant/room';
  
 const useDrawingBoard = ({ 
@@ -27,16 +27,23 @@ const useDrawingBoard = ({
     const [pencilSize, setPencilSize] = useState(DEFAULT_PENCIL_SIZE);
     const [drawingColor, setDrawingColor] = useState(DEFAULT_DRAWING_COLOR);
 
+    const [networkPencilSize, setNetworkPencilSize] = useState(DEFAULT_PENCIL_SIZE);
+    const [networkDrawingColor, setNetworkDrawingColor] = useState(DEFAULT_DRAWING_COLOR);
+
     useEffect(() => {
         if (canvasRef.current !== null) {
             const canvas = canvasRef.current;
             const ctx = canvas.getContext("2d");
  
             ctx.beginPath();
-            ctx.strokeStyle = drawingColor;
-            ctx.lineWidth = pencilSize;
             ctx.lineJoin = LINE_JOIN;
             ctx.lineCap = LINE_CAP;
+
+            const strokeStyle = canDraw ? drawingColor : networkDrawingColor;
+            const lineWidth = canDraw ? pencilSize : networkPencilSize;
+
+            ctx.strokeStyle = strokeStyle;
+            ctx.lineWidth = lineWidth;
 
             let len = segment.length;
             for (let i = lastDrawn + 1; i < len; i++) {
@@ -48,7 +55,9 @@ const useDrawingBoard = ({
             }
             updateLastDrawn(len - 1);
         }
-    }, [drawing, segment, lastDrawn, updateLastDrawn, updateSegment, endSegment, pencilSize, drawingColor, canvasRef]);
+    }, [drawing, segment, lastDrawn, updateLastDrawn, updateSegment, endSegment, 
+        pencilSize, drawingColor, canvasRef, canDraw, networkDrawingColor, 
+        networkPencilSize]);
 
     useEffect(() => {
         const handleGlobalMouseUp = () => {
@@ -124,7 +133,7 @@ const useDrawingBoard = ({
         setPosition({ x, y });
         if (selectedTool === TOOL_TYPES.PENCIL) {
             updateSegment({x, y});
-            sendPictionaryUpdateMessage(DRAWING_UPDATE_TYPES.ADD_TO_SEGMENT, {x, y});
+            sendPictionaryUpdateMessage(DRAWING_UPDATE_TYPES.ADD_TO_SEGMENT, {x, y}, drawingColor, pencilSize);
         } else if (selectedTool === TOOL_TYPES.FLOOD_FILL) {
             floodFill({x, y});
         }
@@ -256,11 +265,23 @@ const useDrawingBoard = ({
                 if (point && point.x && point.y) {
                     updateSegment(point);
                 }
+
+                const color = message.drawingColor;
+                const size = message.pencilSize;
+
+                if (color !== null && typeof color === 'string') {
+                    setNetworkDrawingColor(color);
+                }
+
+                if (Number.isInteger(size) && (size >= MINIMUM_PENCIL_SIZE && size <= MAXIMUM_PENCIL_SIZE)) {
+                    setNetworkPencilSize(size);
+                }
+
             } else if (message.updateType === DRAWING_UPDATE_TYPES.END_SEGMENT) {
-                endSegment({pencilSize, drawingColor});
+                endSegment({ pencilSize: networkPencilSize, drawingColor: networkDrawingColor});
             }
         }
-    }, [deleteDrawing, canvasRef, drawingColor, endSegment, pencilSize, undo, updateSegment]);
+    }, [deleteDrawing, canvasRef, endSegment, undo, updateSegment, networkDrawingColor, networkPencilSize]);
 
     setGameUpdateHandler(handleGameUpdate);
 
