@@ -1,7 +1,8 @@
 import React from 'react';
 import Header from './Header'
-// import Button from '@mui/material/Button';
+
 import DrawingBoard from '../../components/DrawingBoard';
+import SocketTest from '../../components/SocketTest';
 import { BOARD_HEIGHT, BOARD_WIDTH } from '../../constant/drawingBoard';
 
 function TestPage() {
@@ -14,6 +15,7 @@ function TestPage() {
         height={BOARD_HEIGHT}
       />
 
+      <SocketTest />
     </div>
   );
 }

@@ -30,7 +30,14 @@ export const drawingColors = [
 
 export const TOOL_TYPES = {
     PENCIL: 'pencil',
-    FLOOD_FILL: 'flood-fill',
+    FLOOD_FILL: 'flood_fill',
 };
 
 export const DEFAULT_TOOL = TOOL_TYPES.PENCIL;
+
+export const DRAWING_UPDATE_TYPES = {
+    DELETE: 'delete',
+    UNDO: 'undo',
+    ADD_TO_SEGMENT: 'add_to_segment',
+    END_SEGMENT: 'end_segment',
+};
