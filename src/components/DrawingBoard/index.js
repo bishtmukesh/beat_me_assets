@@ -15,6 +15,7 @@ const DrawingBoard = ({
     updateLastDrawn,
     updateSegment,
     endSegment,
+    addFloodFill,
     removeLastSegment,
     deleteDrawing,
     canDraw,
@@ -42,7 +43,7 @@ const DrawingBoard = ({
         selectedTool,
         setSelectedTool,
     } = useDrawingBoard( { width, height, canvasRef, drawing, segment, lastDrawn, updateLastDrawn, updateSegment, 
-                           endSegment, removeLastSegment, deleteDrawing, canDraw, sendPictionaryUpdateMessage, setGameUpdateHandler } );
+                           endSegment, addFloodFill, removeLastSegment, deleteDrawing, canDraw, sendPictionaryUpdateMessage, setGameUpdateHandler } );
 
     return (
         <Container>
@@ -81,6 +82,7 @@ DrawingBoard.propTypes = {
     updateLastDrawn: PropTypes.func.isRequired,
     updateSegment: PropTypes.func.isRequired,
     endSegment: PropTypes.func.isRequired,
+    addFloodFill: PropTypes.func.isRequired,
     removeLastSegment: PropTypes.func.isRequired,
     deleteDrawing: PropTypes.func.isRequired,
     canDraw: PropTypes.bool.isRequired,

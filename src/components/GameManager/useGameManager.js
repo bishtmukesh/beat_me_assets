@@ -9,7 +9,7 @@ const useGameManager = ( { roomCode, stompClient, setGameUpdateHandler } ) => {
     
     const sendPictionaryUpdateMessage = useCallback((updateType, point, drawingColor, pencilSize) => {
         if (stompClient && stompClient.connected) {
-            if (updateType === DRAWING_UPDATE_TYPES.ADD_TO_SEGMENT) {
+            if (updateType === DRAWING_UPDATE_TYPES.ADD_TO_SEGMENT || updateType === DRAWING_UPDATE_TYPES.ADD_FLOOD_FILL) {
                 stompClient.send(PICTIONARY_UPDATE_MESSAGE_ENDPOINT, {}, JSON.stringify({ roomCode, updateType, point, drawingColor, pencilSize }));
             } else {
                 stompClient.send(PICTIONARY_UPDATE_MESSAGE_ENDPOINT, {}, JSON.stringify({ roomCode, updateType }));

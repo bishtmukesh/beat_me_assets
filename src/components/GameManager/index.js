@@ -15,6 +15,7 @@ const GameManager = ( { roomCode, isHost, stompClient, setGameUpdateHandler } ) 
     const updateLastDrawn = useStoreActions(actions => actions.drawing.updateLastDrawn);
     const updateSegment = useStoreActions(actions => actions.drawing.updateSegment);
     const endSegment = useStoreActions(actions => actions.drawing.endSegment);
+    const addFloodFill = useStoreActions(actions => actions.drawing.addFloodFill);
     const removeLastSegment = useStoreActions(actions => actions.drawing.removeLastSegment);
     const deleteDrawing = useStoreActions(actions => actions.drawing.deleteDrawing);
   
@@ -40,6 +41,7 @@ const GameManager = ( { roomCode, isHost, stompClient, setGameUpdateHandler } ) 
                 updateLastDrawn={updateLastDrawn}
                 updateSegment={updateSegment}
                 endSegment={endSegment}
+                addFloodFill={addFloodFill}
                 removeLastSegment={removeLastSegment}
                 deleteDrawing={deleteDrawing}
                 canDraw={isHost}

@@ -40,4 +40,5 @@ export const DRAWING_UPDATE_TYPES = {
     UNDO: 'undo',
     ADD_TO_SEGMENT: 'add_to_segment',
     END_SEGMENT: 'end_segment',
+    ADD_FLOOD_FILL: "add_flood_fill",
 };

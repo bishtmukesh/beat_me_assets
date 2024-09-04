@@ -1,4 +1,5 @@
 import { action } from 'easy-peasy';
+import { TOOL_TYPES } from '../../constant/drawingBoard';
 
 const drawingModel = {
   drawing: [],
@@ -15,7 +16,15 @@ const drawingModel = {
 
   endSegment: action((state, pencilStats) => {
     const { pencilSize, drawingColor } = pencilStats;
-    state.drawing.push({ pencilSize, drawingColor, points : state.segment });
+    state.drawing.push({ tool: TOOL_TYPES.PENCIL, pencilSize, drawingColor, points : state.segment });
+    state.segment = [];
+    state.lastDrawn = -1;
+  }),
+
+  addFloodFill: action((state, floodFillParams) => {
+    const { startPoint, drawingColor } = floodFillParams;
+    console.log("Adding flood fill for -> " + startPoint.x + ", " + startPoint.y);
+    state.drawing.push({ tool: TOOL_TYPES.FLOOD_FILL, drawingColor, startPoint });
     state.segment = [];
     state.lastDrawn = -1;
   }),

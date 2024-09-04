@@ -14,6 +14,7 @@ const useDrawingBoard = ({
     updateLastDrawn,
     updateSegment,
     endSegment,
+    addFloodFill,
     removeLastSegment,
     deleteDrawing, 
     canDraw,
@@ -71,6 +72,59 @@ const useDrawingBoard = ({
         };
     }, [endSegment]);
 
+    const floodFill = useCallback((startPoint, fillColor) => {
+        if (canvasRef.current !== null) {
+            const canvas = canvasRef.current;
+            const ctx = canvas.getContext("2d");
+            const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+            const data = imageData.data;
+
+            const width = canvas.width;
+            const height = canvas.height;
+
+            const startX = Math.round(startPoint.x);
+            const startY = Math.round(startPoint.y);
+
+            console.log("Calling flood fill for -> " + startX + ", " + startY);
+
+            const stack = [[startX, startY]]; 
+            const startColor = getColorAtPixel(data, startX, startY, width);
+
+            if (colorsMatch(startColor, hexToRgba(fillColor))) return;
+
+            const visited = new Uint8Array(width * height);
+
+            const directions = [
+                [-1, 0], [1, 0],
+                [0, -1], [0, 1]  
+            ];
+
+            while (stack.length > 0) {
+                const [px, py] = stack.pop();
+                const index = py * width + px;
+
+                if (!visited[index]) {
+                    visited[index] = 1;
+                    const currentColor = getColorAtPixel(data, px, py, width);
+
+                    if (colorsMatch(currentColor, startColor)) {
+                        setColorAtPixel(data, px, py, hexToRgba(fillColor), width);
+
+                        for (const [dx, dy] of directions) {
+                            const nx = px + dx;
+                            const ny = py + dy;
+                            if (nx >= 0 && nx < width && ny >= 0 && ny < height) {
+                                stack.push([nx, ny]);
+                            }
+                        }
+                    }
+                }
+            }
+
+            ctx.putImageData(imageData, 0, 0);
+        }
+    }, [canvasRef]);
+
     const undo = useCallback(() => {
         if (canvasRef.current !== null) {
             const canvas = canvasRef.current;
@@ -81,24 +135,29 @@ const useDrawingBoard = ({
             ctx.lineCap = LINE_CAP;
 
             drawing.forEach((segment, index) => {
-                ctx.strokeStyle = segment.drawingColor;
-                ctx.lineWidth = segment.pencilSize;
-                ctx.beginPath();
                 if (index !== drawing.length - 1) {
-                    const points = segment.points;
-                    for (let i = 0; i < points.length; i++) {
-                        if (i !== 0) {
-                            drawLine(ctx, points[i - 1].x, points[i - 1].y, points[i].x, points[i].y);
-                        } else {
-                            drawLine(ctx, points[i].x, points[i].y, points[i].x, points[i].y);
+                    if (segment.tool === TOOL_TYPES.PENCIL) {
+                        ctx.strokeStyle = segment.drawingColor;
+                        ctx.lineWidth = segment.pencilSize;
+                        ctx.beginPath();
+
+                        const points = segment.points;
+                        for (let i = 0; i < points.length; i++) {
+                            if (i !== 0) {
+                                drawLine(ctx, points[i - 1].x, points[i - 1].y, points[i].x, points[i].y);
+                            } else {
+                                drawLine(ctx, points[i].x, points[i].y, points[i].x, points[i].y);
+                            }
                         }
+                    } else if (segment.tool === TOOL_TYPES.FLOOD_FILL){
+                        floodFill(segment.startPoint, segment.drawingColor);
                     }
                 }
             });
 
             removeLastSegment();
         }
-    }, [drawing, canvasRef, removeLastSegment]);
+    }, [drawing, canvasRef, removeLastSegment, floodFill]);
 
     const handleUndo = useCallback(() => {
         if (canDraw) {
@@ -135,7 +194,9 @@ const useDrawingBoard = ({
             updateSegment({x, y});
             sendPictionaryUpdateMessage(DRAWING_UPDATE_TYPES.ADD_TO_SEGMENT, {x, y}, drawingColor, pencilSize);
         } else if (selectedTool === TOOL_TYPES.FLOOD_FILL) {
-            floodFill({x, y});
+            addFloodFill({startPoint : {x, y}, drawingColor});
+            floodFill({x, y}, drawingColor);
+            sendPictionaryUpdateMessage(DRAWING_UPDATE_TYPES.ADD_FLOOD_FILL, {x, y}, drawingColor);
         }
     };
 
@@ -171,54 +232,6 @@ const useDrawingBoard = ({
         ctx.lineTo(endX, endY);
         ctx.stroke();
     };
-
-    const floodFill = useCallback(({x, y}) => {
-        if (canvasRef.current !== null && canDraw) {
-            const canvas = canvasRef.current;
-            const ctx = canvas.getContext("2d");
-            const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-            const data = imageData.data;
-
-            const width = canvas.width;
-            const height = canvas.height;
-
-            const stack = [[x, y]]; 
-            const startColor = getColorAtPixel(data, x, y, width);
-
-            if (colorsMatch(startColor, hexToRgba(drawingColor))) return;
-
-            const visited = new Uint8Array(width * height);
-
-            const directions = [
-                [-1, 0], [1, 0], // left, right
-                [0, -1], [0, 1]  // top, bottom
-            ];
-
-            while (stack.length > 0) {
-                const [px, py] = stack.pop();
-                const index = py * width + px;
-
-                if (!visited[index]) {
-                    visited[index] = 1;
-                    const currentColor = getColorAtPixel(data, px, py, width);
-
-                    if (colorsMatch(currentColor, startColor)) {
-                        setColorAtPixel(data, px, py, hexToRgba(drawingColor), width);
-
-                        for (const [dx, dy] of directions) {
-                            const nx = px + dx;
-                            const ny = py + dy;
-                            if (nx >= 0 && nx < width && ny >= 0 && ny < height) {
-                                stack.push([nx, ny]);
-                            }
-                        }
-                    }
-                }
-            }
-
-            ctx.putImageData(imageData, 0, 0);
-        }
-    }, [drawingColor, canvasRef, canDraw]);
 
     function getColorAtPixel(data, x, y, width) {
         const index = (y * width + x) * 4;
@@ -276,12 +289,19 @@ const useDrawingBoard = ({
                 if (Number.isInteger(size) && (size >= MINIMUM_PENCIL_SIZE && size <= MAXIMUM_PENCIL_SIZE)) {
                     setNetworkPencilSize(size);
                 }
-
             } else if (message.updateType === DRAWING_UPDATE_TYPES.END_SEGMENT) {
                 endSegment({ pencilSize: networkPencilSize, drawingColor: networkDrawingColor});
+            } else if (message.updateType === DRAWING_UPDATE_TYPES.ADD_FLOOD_FILL) {
+                const point = message.point;
+                const fillColor = message.drawingColor;
+                if (point && point.x && point.y) {
+                    addFloodFill({startPoint : point, drawingColor: fillColor});
+                    console.log("Calling floow fill with values -> " + point.x + ", " + point.y + " and color -> " + fillColor);
+                    floodFill(point, fillColor);
+                }
             }
         }
-    }, [deleteDrawing, canvasRef, endSegment, undo, updateSegment, networkDrawingColor, networkPencilSize]);
+    }, [deleteDrawing, canvasRef, endSegment, undo, updateSegment, networkDrawingColor, networkPencilSize, addFloodFill, floodFill]);
 
     setGameUpdateHandler(handleGameUpdate);
 
@@ -312,6 +332,7 @@ useDrawingBoard.propTypes = {
     updateLastDrawn: PropTypes.func.isRequired,
     updateSegment: PropTypes.func.isRequired,
     endSegment: PropTypes.func.isRequired,
+    addFloodFill: PropTypes.func.isRequired,
     removeLastSegment: PropTypes.func.isRequired,
     deleteDrawing: PropTypes.func.isRequired,
     canDraw: PropTypes.bool.isRequired,
