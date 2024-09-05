@@ -1,4 +1,5 @@
 import React from 'react';
+import Box from '@mui/material/Box';
 import { useStoreState, useStoreActions } from 'easy-peasy';
 
 import DrawingBoard from '../../components/DrawingBoard';
@@ -24,7 +25,7 @@ function TestPage() {
     }
 
     return (
-        <div>
+        <Box sx={{ marginTop: '30px' }}>
             <DrawingBoard
                 width={600}
                 height={600}
@@ -42,7 +43,7 @@ function TestPage() {
                 setGameUpdateHandler={setGameUpdateHandler}
             />
             
-        </div>
+        </Box>
     );
 }
 

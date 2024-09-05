@@ -23,7 +23,6 @@ const drawingModel = {
 
   addFloodFill: action((state, floodFillParams) => {
     const { startPoint, drawingColor } = floodFillParams;
-    console.log("Adding flood fill for -> " + startPoint.x + ", " + startPoint.y);
     state.drawing.push({ tool: TOOL_TYPES.FLOOD_FILL, drawingColor, startPoint });
     state.segment = [];
     state.lastDrawn = -1;

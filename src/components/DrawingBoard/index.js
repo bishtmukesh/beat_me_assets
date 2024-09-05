@@ -1,10 +1,11 @@
-import React, { useRef, useEffect } from 'react';
+import React, { useRef, useEffect, useMemo } from 'react';
 import PropTypes from 'prop-types';
-import Container from '@mui/material/Container';
+import Box from '@mui/material/Box';
 
 import './index.css';
 import useDrawingBoard from './useDrawingBoard';
 import DrawingControls from '../DrawingControls';
+import { TOOL_TYPES } from '../../constant/drawingBoard';
 
 const DrawingBoard = ({
     width, 
@@ -45,10 +46,31 @@ const DrawingBoard = ({
     } = useDrawingBoard( { width, height, canvasRef, drawing, segment, lastDrawn, updateLastDrawn, updateSegment, 
                            endSegment, addFloodFill, removeLastSegment, deleteDrawing, canDraw, sendPictionaryUpdateMessage, setGameUpdateHandler } );
 
+    const cursorClass = useMemo(() => {
+        switch (selectedTool) {
+            case TOOL_TYPES.PENCIL:
+                return 'pencilCursor';
+            case TOOL_TYPES.FLOOD_FILL:
+                return 'fillCursor';
+            default:
+                return 'defaultCursor';
+        }
+    }, [selectedTool]);
+
     return (
-        <Container>
+        <Box 
+            component="section" 
+            sx={{  
+                width: '100%',
+                height: '100%',
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                justifyContent: 'center',
+            }}
+        >
             <canvas 
-                id="drawingBoard" 
+                className={`drawingBoard ${cursorClass}`}
                 ref={canvasRef}
                 width={width} 
                 height={height} 
@@ -69,7 +91,7 @@ const DrawingBoard = ({
                 selectedTool={selectedTool}
                 setSelectedTool={setSelectedTool}
             />
-        </Container>
+        </Box>
     );
 }
 

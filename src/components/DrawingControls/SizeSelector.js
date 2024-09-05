@@ -13,8 +13,21 @@ const SizeSelector = ( { pencilSize, setPencilSize } ) => {
     };
 
     return (
-        <Box>
+        <Box 
+            sx={{
+                padding: '0 5px',
+                marginTop: '10px',
+            }}
+        >
             <Slider 
+                sx={{
+                    color: 'primary.main', 
+                    '& .MuiSlider-thumb': { 
+                        borderRadius: "10%",
+                        width: '10px',
+                        height: `${ ( (pencilSize - MINIMUM_PENCIL_SIZE) / (MAXIMUM_PENCIL_SIZE - MINIMUM_PENCIL_SIZE) ) * (35 - 15) + 15 }px`
+                    },
+                }}
                 aria-label="Size" 
                 value={pencilSize} 
                 onChange={handleChange} 

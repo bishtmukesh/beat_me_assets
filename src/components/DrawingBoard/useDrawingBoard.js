@@ -85,8 +85,6 @@ const useDrawingBoard = ({
             const startX = Math.round(startPoint.x);
             const startY = Math.round(startPoint.y);
 
-            console.log("Calling flood fill for -> " + startX + ", " + startY);
-
             const stack = [[startX, startY]]; 
             const startColor = getColorAtPixel(data, startX, startY, width);
 
@@ -296,7 +294,6 @@ const useDrawingBoard = ({
                 const fillColor = message.drawingColor;
                 if (point && point.x && point.y) {
                     addFloodFill({startPoint : point, drawingColor: fillColor});
-                    console.log("Calling floow fill with values -> " + point.x + ", " + point.y + " and color -> " + fillColor);
                     floodFill(point, fillColor);
                 }
             }

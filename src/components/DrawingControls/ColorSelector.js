@@ -4,7 +4,7 @@ import Grid from '@mui/material/Grid';
 import PropTypes from 'prop-types';
 
 import './index.css';
-import { COLOR_SELECTOR_BOX_WIDTH, drawingColors } from '../../constant/drawingBoard';
+import { COLOR_SELECTOR_BOX_HEIGHT, COLOR_SELECTOR_BOX_WIDTH, drawingColors } from '../../constant/drawingBoard';
 
 
 const ColorBox = ({ color, setDrawingColor }) => {
@@ -16,10 +16,11 @@ const ColorBox = ({ color, setDrawingColor }) => {
     return (
         <Box sx={{ 
                 backgroundColor: color, 
-                width: 'auto', 
-                height: COLOR_SELECTOR_BOX_WIDTH,
+                height: COLOR_SELECTOR_BOX_HEIGHT,
+                width: COLOR_SELECTOR_BOX_WIDTH, 
                 cursor: 'pointer',
-                border: '2px solid black',
+                border: '1px solid black',
+                borderRadius: '50%',
             }} 
             onClick={handleColorChange}
         />
@@ -29,10 +30,17 @@ const ColorBox = ({ color, setDrawingColor }) => {
 const ColorSelector = ( { drawingColor, setDrawingColor } ) => {
   
     return (
-        <Box sx={{ p: 2, border: '1px solid grey' }}>
+        <Box 
+            sx={{ 
+                padding: 2, 
+                border: '2px solid grey',
+                borderRadius: '10px',
+                marginTop: '10px',
+            }}
+        >
             <Grid container spacing={2}>
                 {drawingColors.map((color, index) => (
-                    <Grid key={index} item xs={2}>
+                    <Grid key={index} item xs={1}>
                         <ColorBox
                             color={color}
                             setDrawingColor={setDrawingColor}

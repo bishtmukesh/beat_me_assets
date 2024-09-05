@@ -1,4 +1,18 @@
-#drawingBoard {
-    border: 1px solid black;
-    margin-top: 50px;
+.drawingBoard {
+    border: 2px solid black;
+    border-radius: 10px;
 }
+
+.pencilCursor {
+    cursor: url('/src/assets/cursor/pencil.cur') 0 32, auto;
+}
+
+.fillCursor {
+    cursor: url('/src/assets/cursor/fill.cur') 0 32, auto;
+}
+
+.defaultCursor {
+    cursor: auto;
+}
+
+

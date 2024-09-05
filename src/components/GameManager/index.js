@@ -26,9 +26,12 @@ const GameManager = ( { roomCode, isHost, stompClient, setGameUpdateHandler } ) 
     return (
         <Box 
             sx={{
-               minHeight: '800px',
+                minHeight: '800px',
                 width: '100%',
-                border: '1px solid black'
+                border: '1px solid black',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
            }}
         >
 
