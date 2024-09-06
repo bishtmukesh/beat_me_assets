@@ -8,12 +8,13 @@ const useMouseEvents = ( {
     canDraw, 
     selectedTool, 
     pencilSize, 
-    drawingColor, 
-    segment,
+    drawingColor,
     updateSegment, 
-    endSegment, 
+    endSegment,
+    saveBoardState, 
     quickFill,
     addFloodFill,
+    getImageData,
     sendPictionaryUpdateMessage,
 }) => {
 
@@ -76,10 +77,12 @@ const useMouseEvents = ( {
             } else if (selectedTool === TOOL_TYPES.FLOOD_FILL) {
                 addFloodFill({startPoint : {x, y}, drawingColor});
                 quickFill({x, y}, drawingColor);
+                saveBoardState(getImageData());
                 sendPictionaryUpdateMessage(DRAWING_UPDATE_TYPES.ADD_FLOOD_FILL, {x, y}, drawingColor);
             }
         }
-    }, [canvasRef, setIsMouseDown, canDraw, pencilSize, selectedTool, drawingColor, updateSegment, addFloodFill, quickFill, sendPictionaryUpdateMessage]);
+    }, [canvasRef, setIsMouseDown, canDraw, pencilSize, selectedTool, drawingColor, updateSegment, 
+        addFloodFill, quickFill, sendPictionaryUpdateMessage, saveBoardState, getImageData]);
 
     const handleMouseUp = useCallback(() => {
         setIsMouseDown(false);
@@ -88,9 +91,10 @@ const useMouseEvents = ( {
 
         if (selectedTool === TOOL_TYPES.PENCIL) {
             endSegment({pencilSize, drawingColor});
+            saveBoardState(getImageData());
             sendPictionaryUpdateMessage(DRAWING_UPDATE_TYPES.END_SEGMENT);
         }
-    }, [setIsMouseDown, canDraw, selectedTool, drawingColor, pencilSize, endSegment, sendPictionaryUpdateMessage]);
+    }, [setIsMouseDown, canDraw, selectedTool, drawingColor, pencilSize, endSegment, sendPictionaryUpdateMessage, getImageData, saveBoardState]);
 
     const handleMouseEnter = useCallback((event) => {
         setIsInside(true);
@@ -133,11 +137,12 @@ useMouseEvents.propTypes = {
     selectedTool: PropTypes.string.isRequired,
     pencilSize: PropTypes.number.isRequired,
     drawingColor: PropTypes.string.isRequired,
-    segment: PropTypes.array.isRequired,
     updateSegment: PropTypes.func.isRequired,
     endSegment: PropTypes.func.isRequired,
+    saveBoardState: PropTypes.func.isRequired,
     quickFill: PropTypes.func.isRequired,
     addFloodFill: PropTypes.func.isRequired,
+    getImageData: PropTypes.func.isRequired,
     sendPictionaryUpdateMessage: PropTypes.func.isRequired,
 };
 

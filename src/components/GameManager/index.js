@@ -9,14 +9,15 @@ import DrawingBoard from '../DrawingBoard';
 
 const GameManager = ( { roomCode, isHost, stompClient, setGameUpdateHandler } ) => {
 
-  	const drawing = useStoreState(state => state.drawing.drawing);
     const segment = useStoreState(state => state.drawing.segment);
     const lastDrawn = useStoreState(state => state.drawing.lastDrawn);
+    const prevStates = useStoreState(state => state.drawing.prevStates);
     const updateLastDrawn = useStoreActions(actions => actions.drawing.updateLastDrawn);
     const updateSegment = useStoreActions(actions => actions.drawing.updateSegment);
     const endSegment = useStoreActions(actions => actions.drawing.endSegment);
+    const saveBoardState = useStoreActions(actions => actions.drawing.saveBoardState);
+    const undoDrawing = useStoreActions(actions => actions.drawing.undoDrawing);
     const addFloodFill = useStoreActions(actions => actions.drawing.addFloodFill);
-    const removeLastSegment = useStoreActions(actions => actions.drawing.removeLastSegment);
     const deleteDrawing = useStoreActions(actions => actions.drawing.deleteDrawing);
   
     const {
@@ -38,14 +39,15 @@ const GameManager = ( { roomCode, isHost, stompClient, setGameUpdateHandler } ) 
             <DrawingBoard
                 width={600}
                 height={600}
-                drawing={drawing}
                 segment={segment}
                 lastDrawn={lastDrawn}
+                prevStates={prevStates}
                 updateLastDrawn={updateLastDrawn}
                 updateSegment={updateSegment}
                 endSegment={endSegment}
+                saveBoardState={saveBoardState}
+                undoDrawing={undoDrawing}
                 addFloodFill={addFloodFill}
-                removeLastSegment={removeLastSegment}
                 deleteDrawing={deleteDrawing}
                 canDraw={isHost}
                 sendPictionaryUpdateMessage={sendPictionaryUpdateMessage}

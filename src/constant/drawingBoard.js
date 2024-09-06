@@ -3,7 +3,9 @@ export const BOARD_HEIGHT = 600;
 
 export const DEFAULT_PENCIL_SIZE = 5;
 export const MINIMUM_PENCIL_SIZE = 1;
-export const MAXIMUM_PENCIL_SIZE = 15;
+export const MAXIMUM_PENCIL_SIZE = 20;
+
+export const UNDO_LIMIT = 50;
 
 export const LINE_JOIN = 'round';
 export const LINE_CAP = 'round';

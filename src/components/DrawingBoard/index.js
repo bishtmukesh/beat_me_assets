@@ -10,14 +10,15 @@ import { TOOL_TYPES } from '../../constant/drawingBoard';
 const DrawingBoard = ({
     width, 
     height, 
-    drawing,
     segment,
     lastDrawn,
+    prevStates,
     updateLastDrawn,
     updateSegment,
     endSegment,
+    saveBoardState,
+    undoDrawing,
     addFloodFill,
-    removeLastSegment,
     deleteDrawing,
     canDraw,
     sendPictionaryUpdateMessage,
@@ -44,8 +45,8 @@ const DrawingBoard = ({
         setDrawingColor,
         selectedTool,
         setSelectedTool,
-    } = useDrawingBoard( { width, height, canvasRef, drawing, segment, lastDrawn, updateLastDrawn, updateSegment, 
-                           endSegment, addFloodFill, removeLastSegment, deleteDrawing, canDraw, sendPictionaryUpdateMessage, setGameUpdateHandler } );
+    } = useDrawingBoard( { width, height, canvasRef, segment, lastDrawn, prevStates, updateLastDrawn, updateSegment, endSegment, saveBoardState, 
+                           undoDrawing, addFloodFill, deleteDrawing, canDraw, sendPictionaryUpdateMessage, setGameUpdateHandler } );
 
     const cursorClass = useMemo(() => {
         switch (selectedTool) {
@@ -100,14 +101,15 @@ const DrawingBoard = ({
 DrawingBoard.propTypes = {
     width: PropTypes.number.isRequired,
     height: PropTypes.number.isRequired,
-    drawing: PropTypes.array.isRequired, 
     segment: PropTypes.array.isRequired,
     lastDrawn: PropTypes.number.isRequired, 
+    prevStates: PropTypes.array.isRequired,
     updateLastDrawn: PropTypes.func.isRequired,
     updateSegment: PropTypes.func.isRequired,
     endSegment: PropTypes.func.isRequired,
+    saveBoardState: PropTypes.func.isRequired,
+    undoDrawing: PropTypes.func.isRequired,
     addFloodFill: PropTypes.func.isRequired,
-    removeLastSegment: PropTypes.func.isRequired,
     deleteDrawing: PropTypes.func.isRequired,
     canDraw: PropTypes.bool.isRequired,
     sendPictionaryUpdateMessage: PropTypes.func.isRequired,

@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import PropTypes from 'prop-types';
 
 import { DEFAULT_DRAWING_COLOR, DEFAULT_PENCIL_SIZE, DEFAULT_TOOL, DRAWING_UPDATE_TYPES, 
-         LINE_CAP, LINE_JOIN, MAXIMUM_PENCIL_SIZE, MINIMUM_PENCIL_SIZE, TOOL_TYPES } from '../../constant/drawingBoard';
+         LINE_CAP, LINE_JOIN, MAXIMUM_PENCIL_SIZE, MINIMUM_PENCIL_SIZE } from '../../constant/drawingBoard';
 import { MESSAGE_TYPES } from '../../constant/room';
 import useMouseEvents from './useMouseEvents';
 import useFloodFill from './useFloodFill';
@@ -11,14 +11,15 @@ const useDrawingBoard = ({
     width, 
     height, 
     canvasRef,
-    drawing,
-    segment,
     lastDrawn,
+    segment,
+    prevStates,
     updateLastDrawn,
     updateSegment,
     endSegment,
+    saveBoardState,
+    undoDrawing,
     addFloodFill,
-    removeLastSegment,
     deleteDrawing, 
     canDraw,
     sendPictionaryUpdateMessage,
@@ -32,6 +33,20 @@ const useDrawingBoard = ({
     const [networkPencilSize, setNetworkPencilSize] = useState(DEFAULT_PENCIL_SIZE);
     const [networkDrawingColor, setNetworkDrawingColor] = useState(DEFAULT_DRAWING_COLOR);
 
+    const getImageData = useCallback(() => {
+        if (canvasRef.current !== null) {
+            const canvas = canvasRef.current;
+            const ctx = canvas.getContext('2d');
+
+            const width = canvas.width;
+            const height = canvas.height;
+
+            return ctx.getImageData(0, 0, width, height);
+        } else {
+            return null;
+        }
+    }, [canvasRef]);
+
     const {
         quickFill,
     } = useFloodFill({ canvasRef });
@@ -41,7 +56,8 @@ const useDrawingBoard = ({
         handleMouseEnter,
         handleMouseDown,
         handleMouseUp,
-    } = useMouseEvents({ canvasRef, canDraw, selectedTool, pencilSize, drawingColor, segment, updateSegment, endSegment, quickFill, addFloodFill, sendPictionaryUpdateMessage });
+    } = useMouseEvents({ canvasRef, canDraw, selectedTool, pencilSize, drawingColor, updateSegment, endSegment, saveBoardState, 
+                         quickFill, addFloodFill, getImageData, sendPictionaryUpdateMessage });
 
     useEffect(() => {
         if (canvasRef.current !== null) {
@@ -68,48 +84,34 @@ const useDrawingBoard = ({
             }
             updateLastDrawn(len - 1);
         }
-    }, [drawing, segment, lastDrawn, updateLastDrawn, updateSegment, endSegment, 
+    }, [segment, lastDrawn, updateLastDrawn, updateSegment, endSegment, 
         pencilSize, drawingColor, canvasRef, canDraw, networkDrawingColor, 
         networkPencilSize]);
+
+    useEffect(() => {
+        if (canvasRef.current !== null) {
+            const imageData = getImageData();
+            saveBoardState(imageData);
+        }
+    }, [canvasRef, saveBoardState, getImageData]);
 
     const undo = useCallback(() => {
         if (canvasRef.current !== null) {
             const canvas = canvasRef.current;
-            const ctx = canvas.getContext("2d");
+            const ctx = canvas.getContext('2d');
 
-            ctx.clearRect(0, 0,canvas.width, canvas.height);
-            ctx.lineJoin = LINE_JOIN;
-            ctx.lineCap = LINE_CAP;
-
-            drawing.forEach((segment, index) => {
-                if (index !== drawing.length - 1) {
-                    if (segment.tool === TOOL_TYPES.PENCIL) {
-                        ctx.strokeStyle = segment.drawingColor;
-                        ctx.lineWidth = segment.pencilSize;
-                        ctx.beginPath();
-
-                        const points = segment.points;
-                        for (let i = 0; i < points.length; i++) {
-                            if (i !== 0) {
-                                drawLine(ctx, points[i - 1].x, points[i - 1].y, points[i].x, points[i].y);
-                            } else {
-                                drawLine(ctx, points[i].x, points[i].y, points[i].x, points[i].y);
-                            }
-                        }
-                    } else if (segment.tool === TOOL_TYPES.FLOOD_FILL){
-                        quickFill(segment.startPoint, segment.drawingColor);
-                    }
-                }
-            });
-
-            removeLastSegment();
+            if (prevStates.length >= 2) {
+                const imageData = prevStates[prevStates.length - 2];
+                undoDrawing();
+                ctx.putImageData(imageData, 0, 0);
+            }
         }
-    }, [drawing, canvasRef, removeLastSegment, quickFill]);
+    }, [canvasRef, prevStates, undoDrawing]);
 
     const handleUndo = useCallback(() => {
         if (canDraw) {
-            undo();
             sendPictionaryUpdateMessage(DRAWING_UPDATE_TYPES.UNDO);
+            undo();
         }
     }, [undo, sendPictionaryUpdateMessage, canDraw]);
 
@@ -119,7 +121,7 @@ const useDrawingBoard = ({
             const ctx = canvas.getContext("2d");
 
             ctx.clearRect(0, 0,canvas.width, canvas.height);
-            deleteDrawing();
+            deleteDrawing(ctx.getImageData(0, 0, canvas.width, canvas.height));
 
             sendPictionaryUpdateMessage(DRAWING_UPDATE_TYPES.DELETE);
         }
@@ -140,7 +142,7 @@ const useDrawingBoard = ({
                     const ctx = canvas.getContext("2d");
 
                     ctx.clearRect(0, 0,canvas.width, canvas.height);
-                    deleteDrawing();
+                    deleteDrawing(getImageData());
                 }
             } else if (message.updateType === DRAWING_UPDATE_TYPES.UNDO) {
                 console.log("Calling undo");
@@ -163,16 +165,18 @@ const useDrawingBoard = ({
                 }
             } else if (message.updateType === DRAWING_UPDATE_TYPES.END_SEGMENT) {
                 endSegment({ pencilSize: networkPencilSize, drawingColor: networkDrawingColor});
+                saveBoardState(getImageData());
             } else if (message.updateType === DRAWING_UPDATE_TYPES.ADD_FLOOD_FILL) {
                 const point = message.point;
                 const fillColor = message.drawingColor;
                 if (point && point.x && point.y) {
                     addFloodFill({startPoint : point, drawingColor: fillColor});
                     quickFill(point, fillColor);
+                    saveBoardState(getImageData());
                 }
             }
         }
-    }, [deleteDrawing, canvasRef, endSegment, undo, updateSegment, networkDrawingColor, networkPencilSize, addFloodFill, quickFill]);
+    }, [deleteDrawing, canvasRef, endSegment, undo, updateSegment, networkDrawingColor, networkPencilSize, addFloodFill, quickFill, saveBoardState, getImageData]);
 
     setGameUpdateHandler(handleGameUpdate);
 
@@ -198,14 +202,15 @@ useDrawingBoard.propTypes = {
     canvasRef: PropTypes.shape({
         current: PropTypes.instanceOf(Element)
     }),
-    drawing: PropTypes.array.isRequired, 
     segment: PropTypes.array.isRequired,
     lastDrawn: PropTypes.number.isRequired, 
+    prevStates: PropTypes.array.isRequired,
     updateLastDrawn: PropTypes.func.isRequired,
     updateSegment: PropTypes.func.isRequired,
     endSegment: PropTypes.func.isRequired,
+    saveBoardState: PropTypes.func.isRequired,
+    undoDrawing: PropTypes.func.isRequired,
     addFloodFill: PropTypes.func.isRequired,
-    removeLastSegment: PropTypes.func.isRequired,
     deleteDrawing: PropTypes.func.isRequired,
     canDraw: PropTypes.bool.isRequired,
     sendPictionaryUpdateMessage: PropTypes.func.isRequired,
