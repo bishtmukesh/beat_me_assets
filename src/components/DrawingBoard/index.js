@@ -34,6 +34,7 @@ const DrawingBoard = ({
     const {
         handleMouseDown,
         handleMouseMove,
+        handleMouseEnter,
         handleMouseUp,
         handleUndo,
         handleDelete,
@@ -76,6 +77,7 @@ const DrawingBoard = ({
                 height={height} 
                 onMouseDown={handleMouseDown}
                 onMouseMove={handleMouseMove}
+                onMouseEnter={handleMouseEnter}
                 onMouseUp={handleMouseUp}
             />
 

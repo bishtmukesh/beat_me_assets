@@ -4,6 +4,7 @@ import PropTypes from 'prop-types';
 import { DEFAULT_DRAWING_COLOR, DEFAULT_PENCIL_SIZE, DEFAULT_TOOL, DRAWING_UPDATE_TYPES, 
          LINE_CAP, LINE_JOIN, MAXIMUM_PENCIL_SIZE, MINIMUM_PENCIL_SIZE, TOOL_TYPES } from '../../constant/drawingBoard';
 import { MESSAGE_TYPES } from '../../constant/room';
+import useMouseEvents from './useMouseEvents';
 import useFloodFill from './useFloodFill';
  
 const useDrawingBoard = ({ 
@@ -25,8 +26,6 @@ const useDrawingBoard = ({
 }) => {
     
     const [selectedTool, setSelectedTool] = useState(DEFAULT_TOOL);
-    const [isMouseDown, setIsMouseDown] = useState(false);
-    const [position, setPosition] = useState({ x: 0, y: 0 });
     const [pencilSize, setPencilSize] = useState(DEFAULT_PENCIL_SIZE);
     const [drawingColor, setDrawingColor] = useState(DEFAULT_DRAWING_COLOR);
 
@@ -34,9 +33,15 @@ const useDrawingBoard = ({
     const [networkDrawingColor, setNetworkDrawingColor] = useState(DEFAULT_DRAWING_COLOR);
 
     const {
-        floodFill,
         quickFill,
     } = useFloodFill({ canvasRef });
+
+    const {
+        handleMouseMove,
+        handleMouseEnter,
+        handleMouseDown,
+        handleMouseUp,
+    } = useMouseEvents({ canvasRef, canDraw, selectedTool, pencilSize, drawingColor, segment, updateSegment, endSegment, quickFill, addFloodFill, sendPictionaryUpdateMessage });
 
     useEffect(() => {
         if (canvasRef.current !== null) {
@@ -66,18 +71,6 @@ const useDrawingBoard = ({
     }, [drawing, segment, lastDrawn, updateLastDrawn, updateSegment, endSegment, 
         pencilSize, drawingColor, canvasRef, canDraw, networkDrawingColor, 
         networkPencilSize]);
-
-    useEffect(() => {
-        const handleGlobalMouseUp = () => {
-            setIsMouseDown(false);
-        };
-
-        window.addEventListener('mouseup', handleGlobalMouseUp);
-
-        return () => {
-            window.removeEventListener('mouseup', handleGlobalMouseUp);
-        };
-    }, [endSegment]);
 
     const undo = useCallback(() => {
         if (canvasRef.current !== null) {
@@ -132,54 +125,6 @@ const useDrawingBoard = ({
         }
     }, [deleteDrawing, canvasRef, sendPictionaryUpdateMessage, canDraw]);
 
-    
-    const handleMouseDown = (event) => {
-        event.preventDefault();
-        setIsMouseDown(true);
-
-        if (!canDraw) return;
-        
-        const rect = canvasRef.current.getBoundingClientRect();
-        const x = event.clientX - rect.left;
-        const y = event.clientY - rect.top;
-        
-        setPosition({ x, y });
-        if (selectedTool === TOOL_TYPES.PENCIL) {
-            updateSegment({x, y});
-            sendPictionaryUpdateMessage(DRAWING_UPDATE_TYPES.ADD_TO_SEGMENT, {x, y}, drawingColor, pencilSize);
-        } else if (selectedTool === TOOL_TYPES.FLOOD_FILL) {
-            addFloodFill({startPoint : {x, y}, drawingColor});
-            quickFill({x, y}, drawingColor);
-            sendPictionaryUpdateMessage(DRAWING_UPDATE_TYPES.ADD_FLOOD_FILL, {x, y}, drawingColor);
-        }
-    };
-
-    const handleMouseMove = (event) => {
-        event.preventDefault();
-
-        if (!canDraw) return;
-        
-        if (isMouseDown && selectedTool === TOOL_TYPES.PENCIL) {
-            const rect = canvasRef.current.getBoundingClientRect();
-            const x = event.clientX - rect.left;
-            const y = event.clientY - rect.top;
-            setPosition({ x, y });
-            updateSegment(position);
-            sendPictionaryUpdateMessage(DRAWING_UPDATE_TYPES.ADD_TO_SEGMENT, position);
-        }
-    };
-
-    const handleMouseUp = () => {
-        setIsMouseDown(false);
-
-        if (!canDraw) return;
-
-        if (selectedTool === TOOL_TYPES.PENCIL) {
-            endSegment({pencilSize, drawingColor});
-            sendPictionaryUpdateMessage(DRAWING_UPDATE_TYPES.END_SEGMENT);
-        }
-    };
-
     const drawLine = (ctx, startX, startY, endX, endY) => {
         ctx.beginPath();
         ctx.moveTo(startX, startY);
@@ -223,17 +168,18 @@ const useDrawingBoard = ({
                 const fillColor = message.drawingColor;
                 if (point && point.x && point.y) {
                     addFloodFill({startPoint : point, drawingColor: fillColor});
-                    floodFill(point, fillColor);
+                    quickFill(point, fillColor);
                 }
             }
         }
-    }, [deleteDrawing, canvasRef, endSegment, undo, updateSegment, networkDrawingColor, networkPencilSize, addFloodFill, floodFill]);
+    }, [deleteDrawing, canvasRef, endSegment, undo, updateSegment, networkDrawingColor, networkPencilSize, addFloodFill, quickFill]);
 
     setGameUpdateHandler(handleGameUpdate);
 
     return {
         handleMouseDown,
         handleMouseMove,
+        handleMouseEnter,
         handleMouseUp,
         handleUndo,
         handleDelete,
