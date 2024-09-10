@@ -1,5 +1,6 @@
 .drawingBoard {
     border: 2px solid black;
+    background-color: white;
     border-radius: 10px;
 }
 

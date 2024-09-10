@@ -2,8 +2,10 @@ import { useCallback, useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
 
 import { DRAWING_UPDATE_TYPES, TOOL_TYPES } from '../../constant/drawingBoard';
+import { unscalePoint } from '../../utils/scale';
  
-const useMouseEvents = ( { 
+const useMouseEvents = ({
+    canvasSize, 
     canvasRef, 
     canDraw, 
     selectedTool, 
@@ -38,10 +40,10 @@ const useMouseEvents = ( {
             if (isOutside) {
                 setIsInside(false);
                 updateSegment({x, y});
-                sendPictionaryUpdateMessage(DRAWING_UPDATE_TYPES.ADD_TO_SEGMENT, {x, y});
+                sendPictionaryUpdateMessage(DRAWING_UPDATE_TYPES.ADD_TO_SEGMENT, unscalePoint(x, y, canvasSize));
             }
         }
-    }, [canvasRef, isMouseDown, isInside, setIsInside, updateSegment, sendPictionaryUpdateMessage]);
+    }, [canvasRef, canvasSize, isMouseDown, isInside, setIsInside, updateSegment, sendPictionaryUpdateMessage]);
 
     const handleMouseMove = useCallback((event) => {
         event.preventDefault();
@@ -55,10 +57,10 @@ const useMouseEvents = ( {
                 const y = event.clientY - canvasRect.top;
 
                 updateSegment({x, y});
-                sendPictionaryUpdateMessage(DRAWING_UPDATE_TYPES.ADD_TO_SEGMENT, {x, y});
+                sendPictionaryUpdateMessage(DRAWING_UPDATE_TYPES.ADD_TO_SEGMENT, unscalePoint(x, y, canvasSize));
             }
         }
-    }, [canvasRef, canDraw, isMouseDown, selectedTool, updateSegment, sendPictionaryUpdateMessage]);
+    }, [canvasRef, canvasSize, canDraw, isMouseDown, selectedTool, updateSegment, sendPictionaryUpdateMessage]);
 
     const handleMouseDown = useCallback((event) => {
         event.preventDefault();
@@ -73,15 +75,15 @@ const useMouseEvents = ( {
             
             if (selectedTool === TOOL_TYPES.PENCIL) {
                 updateSegment({x, y});
-                sendPictionaryUpdateMessage(DRAWING_UPDATE_TYPES.ADD_TO_SEGMENT, {x, y}, drawingColor, pencilSize);
+                sendPictionaryUpdateMessage(DRAWING_UPDATE_TYPES.ADD_TO_SEGMENT, unscalePoint(x, y, canvasSize), drawingColor, pencilSize);
             } else if (selectedTool === TOOL_TYPES.FLOOD_FILL) {
                 addFloodFill({startPoint : {x, y}, drawingColor});
                 quickFill({x, y}, drawingColor);
                 saveBoardState(getImageData());
-                sendPictionaryUpdateMessage(DRAWING_UPDATE_TYPES.ADD_FLOOD_FILL, {x, y}, drawingColor);
+                sendPictionaryUpdateMessage(DRAWING_UPDATE_TYPES.ADD_FLOOD_FILL, unscalePoint(x, y, canvasSize), drawingColor);
             }
         }
-    }, [canvasRef, setIsMouseDown, canDraw, pencilSize, selectedTool, drawingColor, updateSegment, 
+    }, [canvasRef, canvasSize, setIsMouseDown, canDraw, pencilSize, selectedTool, drawingColor, updateSegment, 
         addFloodFill, quickFill, sendPictionaryUpdateMessage, saveBoardState, getImageData]);
 
     const handleMouseUp = useCallback(() => {
@@ -130,6 +132,7 @@ const useMouseEvents = ( {
 }
 
 useMouseEvents.propTypes = {
+    canvasSize: PropTypes.number.isRequired,
     canvasRef: PropTypes.shape({
         current: PropTypes.instanceOf(Element)
     }),

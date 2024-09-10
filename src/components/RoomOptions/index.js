@@ -155,8 +155,21 @@ const RoomOptions = () => {
                                         value={roomCode}
                                         onChange={handleRoomCodeInput}
                                         inputProps={{maxLength: ROOM_CODE_LENGTH}}
+                                        onKeyDown={(event) => {
+                                            if (validateRoomCodeInput() && event.key === 'Enter') {
+                                                handleJoinRoom();
+                                            }
+                                        }}
                                     />
-                                    <Button id="m" variant="contained" size="large" disabled={!validateRoomCodeInput()} onClick={handleJoinRoom}>Join Room</Button>
+                                    <Button 
+                                        id="m" 
+                                        variant="contained" 
+                                        size="large" 
+                                        disabled={!validateRoomCodeInput()} 
+                                        onClick={handleJoinRoom}
+                                    >
+                                            Join Room
+                                    </Button>
                                 </Box>
                             </Box>
                         </Grid>

@@ -8,8 +8,10 @@ export const ROOM_SUBSCRIPTION_PRIFIX = "/room";
 export const SERVER_CHAT_ENDPOINT = "/message/chat";
 export const SERVER_SUB_CONFIRMATION_ENDPOINT = "/message/confirmation";
 
+export const ROOM_UPDATE_MESSAGE_ENDPOINT = "/message/room_update";
+
 // Pictionary endpoints
-export const  PICTIONARY_UPDATE_MESSAGE_ENDPOINT = "/message/pictionary-update";
+export const  PICTIONARY_UPDATE_MESSAGE_ENDPOINT = "/message/pictionary_update";
 
 /***************************************************************************************/
 

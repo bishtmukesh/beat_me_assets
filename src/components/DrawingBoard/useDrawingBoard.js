@@ -6,10 +6,10 @@ import { DEFAULT_DRAWING_COLOR, DEFAULT_PENCIL_SIZE, DEFAULT_TOOL, DRAWING_UPDAT
 import { MESSAGE_TYPES } from '../../constant/room';
 import useMouseEvents from './useMouseEvents';
 import useFloodFill from './useFloodFill';
+import { scalePoint } from '../../utils/scale';
  
 const useDrawingBoard = ({ 
-    width, 
-    height, 
+    canvasSize,
     canvasRef,
     lastDrawn,
     segment,
@@ -56,7 +56,7 @@ const useDrawingBoard = ({
         handleMouseEnter,
         handleMouseDown,
         handleMouseUp,
-    } = useMouseEvents({ canvasRef, canDraw, selectedTool, pencilSize, drawingColor, updateSegment, endSegment, saveBoardState, 
+    } = useMouseEvents({ canvasSize, canvasRef, canDraw, selectedTool, pencilSize, drawingColor, updateSegment, endSegment, saveBoardState, 
                          quickFill, addFloodFill, getImageData, sendPictionaryUpdateMessage });
 
     useEffect(() => {
@@ -145,12 +145,11 @@ const useDrawingBoard = ({
                     deleteDrawing(getImageData());
                 }
             } else if (message.updateType === DRAWING_UPDATE_TYPES.UNDO) {
-                console.log("Calling undo");
                 undo();
             } else if (message.updateType === DRAWING_UPDATE_TYPES.ADD_TO_SEGMENT) {
                 const point = message.point;
                 if (point && point.x && point.y) {
-                    updateSegment(point);
+                    updateSegment(scalePoint(point.x, point.y, canvasSize));
                 }
 
                 const color = message.drawingColor;
@@ -168,15 +167,16 @@ const useDrawingBoard = ({
                 saveBoardState(getImageData());
             } else if (message.updateType === DRAWING_UPDATE_TYPES.ADD_FLOOD_FILL) {
                 const point = message.point;
+                const scaledPoint = scalePoint(point.x, point.y, canvasSize);
                 const fillColor = message.drawingColor;
                 if (point && point.x && point.y) {
-                    addFloodFill({startPoint : point, drawingColor: fillColor});
-                    quickFill(point, fillColor);
+                    addFloodFill({startPoint : scaledPoint, drawingColor: fillColor});
+                    quickFill(scaledPoint, fillColor);
                     saveBoardState(getImageData());
                 }
             }
         }
-    }, [deleteDrawing, canvasRef, endSegment, undo, updateSegment, networkDrawingColor, networkPencilSize, addFloodFill, quickFill, saveBoardState, getImageData]);
+    }, [, canvasRef, canvasSize, deleteDrawing, endSegment, undo, updateSegment, networkDrawingColor, networkPencilSize, addFloodFill, quickFill, saveBoardState, getImageData]);
 
     setGameUpdateHandler(handleGameUpdate);
 
@@ -197,8 +197,7 @@ const useDrawingBoard = ({
 }
 
 useDrawingBoard.propTypes = {
-    width: PropTypes.number.isRequired,
-    height: PropTypes.number.isRequired,
+    canvasSize: PropTypes.number.isRequired,
     canvasRef: PropTypes.shape({
         current: PropTypes.instanceOf(Element)
     }),

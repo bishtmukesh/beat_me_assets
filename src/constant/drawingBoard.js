@@ -1,5 +1,4 @@
-export const BOARD_WIDTH = 600;
-export const BOARD_HEIGHT = 600;
+export const BOARD_DEFAULT_SIZE = 600;
 
 export const DEFAULT_PENCIL_SIZE = 5;
 export const MINIMUM_PENCIL_SIZE = 1;

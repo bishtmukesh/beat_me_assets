@@ -1,6 +1,6 @@
-import React, { useRef, useEffect, useMemo } from 'react';
-import PropTypes from 'prop-types';
+import React, { useRef, useEffect, useMemo, useState } from 'react';
 import Box from '@mui/material/Box';
+import PropTypes from 'prop-types';
 
 import './index.css';
 import useDrawingBoard from './useDrawingBoard';
@@ -26,11 +26,26 @@ const DrawingBoard = ({
 }) => {
 
     const canvasRef = useRef(null);
+    const boxRef = useRef(null);
+
+    const [canvasSize, setCanvasSizse] = useState(100);
 
     useEffect(() => {
         deleteDrawing();
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
+
+    useEffect(() => {
+        if (canvasRef.current) {
+            const boxWidth = boxRef.current.clientWidth;
+            const boxHeight = boxRef.current.clientHeight;
+
+            const width = (boxWidth / 100) * 90;     // 90% width
+            const height = (boxHeight / 100) * 70;   // 70% height
+
+            setCanvasSizse(Math.min(width, height));
+        }
+    }, [canvasRef, boxRef]);
 
     const {
         handleMouseDown,
@@ -45,7 +60,7 @@ const DrawingBoard = ({
         setDrawingColor,
         selectedTool,
         setSelectedTool,
-    } = useDrawingBoard( { width, height, canvasRef, segment, lastDrawn, prevStates, updateLastDrawn, updateSegment, endSegment, saveBoardState, 
+    } = useDrawingBoard( { canvasSize, canvasRef, segment, lastDrawn, prevStates, updateLastDrawn, updateSegment, endSegment, saveBoardState, 
                            undoDrawing, addFloodFill, deleteDrawing, canDraw, sendPictionaryUpdateMessage, setGameUpdateHandler } );
 
     const cursorClass = useMemo(() => {
@@ -62,20 +77,22 @@ const DrawingBoard = ({
     return (
         <Box 
             component="section" 
+            ref={boxRef}
             sx={{  
                 width: '100%',
                 height: '100%',
                 display: 'flex',
                 flexDirection: 'column',
-                alignItems: 'center',
+                alignItems: 'center', 
                 justifyContent: 'center',
+                border: '1px solid black',
             }}
         >
             <canvas 
                 className={`drawingBoard ${cursorClass}`}
                 ref={canvasRef}
-                width={width} 
-                height={height} 
+                width={canvasSize}
+                height={canvasSize}
                 onMouseDown={handleMouseDown}
                 onMouseMove={handleMouseMove}
                 onMouseEnter={handleMouseEnter}
@@ -83,7 +100,7 @@ const DrawingBoard = ({
             />
 
             <DrawingControls 
-                width={width}
+                width={canvasSize}
                 height={height} 
                 handleUndo={handleUndo}
                 handleDelete={handleDelete}

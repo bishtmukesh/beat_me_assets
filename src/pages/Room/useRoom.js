@@ -26,6 +26,7 @@ const useRoom = ( { roomCode, userName, selectedIconNumber } ) => {
 
     const socketRef = useRef(null);
     const gameUpdateHandler = useRef(null);
+    const roomUpdateHandler = useRef(null);
 
     const onSocketConnect = (frame) => {
         setConnected(true);
@@ -59,6 +60,16 @@ const useRoom = ( { roomCode, userName, selectedIconNumber } ) => {
         gameUpdateHandler.current = handler;
     };
 
+    const handleRoomUpdateMessage  = useCallback((message) => {
+        if (roomUpdateHandler.current) {
+            roomUpdateHandler.current(message);
+        }
+    }, [roomUpdateHandler]); 
+
+    const setRoomUpdateHandler = (handler) => {
+        roomUpdateHandler.current = handler;
+    };
+
     const handleMessageReceived  = useCallback((messageOutput, subscriptionEndpoint) => {
         const message = JSON.parse(messageOutput.body);
         console.log("Message received from room - " + subscriptionEndpoint + " -> " + JSON.stringify(message, null, 2));
@@ -77,6 +88,11 @@ const useRoom = ( { roomCode, userName, selectedIconNumber } ) => {
             if (message.senderUserId !== userId) {
                 console.log("Got a game update, update type is -> " + message.updateType);
                 handleGameUpdateMessage(message);
+            }
+        } else if (message.messageType && message.messageType === MESSAGE_TYPES.ROOM_UPDATE) {
+            if (message.senderUserId !== userId) {
+                console.log("Got a room update, update type is -> " + message.updateType);
+                handleRoomUpdateMessage(message);
             }
         }
     }, [addChat, userId, handleGameUpdateMessage]);
@@ -155,6 +171,7 @@ const useRoom = ( { roomCode, userName, selectedIconNumber } ) => {
         players,
         stompClient,
         setGameUpdateHandler,
+        setRoomUpdateHandler,
     };
 }
 

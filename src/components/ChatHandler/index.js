@@ -97,8 +97,12 @@ const ChatHandler = ( { sendMessage, userId } ) => {
                 variant="outlined"
                 placeholder="Type a message"
                 value={inputMessage}
-                onChange={(e) => setInputMessage(e.target.value)}
-                onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
+                onChange={(event) => setInputMessage(event.target.value)}
+                onKeyDown={(event) => {
+                    if (event.key === 'Enter') {
+                        handleSendMessage();
+                    }
+                }}
             />
             <Button
                 variant="contained"

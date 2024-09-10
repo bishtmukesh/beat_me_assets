@@ -100,7 +100,6 @@ const UserIcon = ( { selectedIconNumber, setSelectedIconNumber, width, height, a
 
 UserIcon.propTypes = {
     selectedIconNumber: PropTypes.number.isRequired,
-    setSelectedIconNumber: PropTypes.func.isRequired,
     width: PropTypes.number.isRequired,
     height: PropTypes.number.isRequired,
     allowSelection: PropTypes.bool.isRequired,
