@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import { useLocation, useParams } from 'react-router-dom';
 import Container from '@mui/material/Container';
 import Box from '@mui/material/Box';
@@ -21,6 +21,16 @@ const Room = () => {
     const [selectedGame, setSelectedGame] = useState(''); 
     const [roomCode, setRoomCode] = useState(roomParams?.roomCode || roomCodeFromURL);
 
+    const [addOnComponent1Renderer, setAddOnComponent1Renderer] = useState(null);
+
+    const renderAddOnComponent1 = useCallback(() => {
+        if (typeof addOnComponent1Renderer === 'function') {
+            return addOnComponent1Renderer();
+        } else {
+            return null;
+        }
+    }, [addOnComponent1Renderer]);
+
     const {
         connected,
         subscribed,
@@ -37,48 +47,54 @@ const Room = () => {
     return (
         <Container className="room">
             {connected && subscribed && (
-                <Grid container spacing={2}>
+                <>
+                    <Grid container spacing={2}>
 
-                    <Grid item xs={3}>
-                        <Box 
-                            sx={{ 
-                                backgroundColor: 'white', 
-                                height: '100%', 
-                                display: 'flex',
-                                flexDirection: 'column',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                gap: 2
-                            }}
-                        >
-                            <PlayerList
-                                players={players}
+                        <Grid item xs={3}>
+                            <Box 
+                                sx={{ 
+                                    backgroundColor: 'white', 
+                                    height: '100%', 
+                                    display: 'flex',
+                                    flexDirection: 'column',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    gap: 2
+                                }}
+                            >
+                                <PlayerList
+                                    players={players}
+                                    userId={userId}
+                                    hostUserId={hostUserId}
+                                />
+                            </Box>
+                        </Grid>
+                        
+                        <Grid item xs={6}>
+                            <GameManager 
+                                roomCode={roomCode}
                                 userId={userId}
-                                hostUserId={hostUserId}
+                                isHost={isHost}
+                                stompClient={stompClient}
+                                setGameUpdateHandler={setGameUpdateHandler}
+                                setRoomUpdateHandler={setRoomUpdateHandler}
+                                setAddOnComponent1Renderer={setAddOnComponent1Renderer}
                             />
-                        </Box>
-                    </Grid>
-                    
-                    <Grid item xs={6}>
-                        <GameManager 
-                            roomCode={roomCode}
-                            isHost={isHost}
-                            stompClient={stompClient}
-                            setGameUpdateHandler={setGameUpdateHandler}
-                            setRoomUpdateHandler={setRoomUpdateHandler}
-                        />
+                        </Grid>
+
+                        <Grid item xs={3}>
+                            <Box sx={{ height: '100%', width: '100%', marginBottom: '20px' }}>
+                                <ChatHandler
+                                    sendMessage={sendMessage}
+                                    userId={userId}
+                                />
+                            </Box>
+                        </Grid>                
+
                     </Grid>
 
-                    <Grid item xs={3}>
-                        <Box sx={{ height: '100%', width: '100%', marginBottom: '20px' }}>
-                            <ChatHandler
-                                sendMessage={sendMessage}
-                                userId={userId}
-                            />
-                        </Box>
-                    </Grid>                
-
-                </Grid>
+                    {renderAddOnComponent1()}
+                </>
             )}
         </Container>
     );

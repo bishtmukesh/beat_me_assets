@@ -86,7 +86,7 @@ const useRoom = ( { roomCode, userName, selectedIconNumber } ) => {
             setHostUserId(message.hostUserId);
         } else if (message.messageType && message.messageType === MESSAGE_TYPES.GAME_UPDATE) {
             if (message.senderUserId !== userId) {
-                console.log("Got a game update, update type is -> " + message.updateType);
+                console.log("Got a game update, update type is -> " + message.updateType + ". Message is -> " + JSON.stringify(message, null, 2));
                 handleGameUpdateMessage(message);
             }
         } else if (message.messageType && message.messageType === MESSAGE_TYPES.ROOM_UPDATE) {

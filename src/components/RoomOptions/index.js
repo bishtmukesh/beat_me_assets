@@ -24,7 +24,7 @@ const RoomOptions = () => {
     const navigate = useNavigate();
 
     const [userName, setUserName] = useState("");
-    const [roomCode, setRoomCode] = useState("");
+    const [roomCode, setRoomCode] = useState("");   
     const [isRoomPrivate, setIsRoomPrivate] = useState(true);
     const [loading, setLoading] = useState(false);
     const [showError, setShowError] = useState(false);

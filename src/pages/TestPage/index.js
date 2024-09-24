@@ -26,10 +26,16 @@ function TestPage() {
     }
 
     return (
-        <Box sx={{ marginTop: '30px' }}>
+        <Box 
+            sx={{ 
+                marginTop: '30px',
+                height: '600px',
+                width: '600px', 
+            }}
+        >
             <DrawingBoard
-                width={600}
-                height={600}
+                width={700}
+                height={700}
                 segment={segment}
                 lastDrawn={lastDrawn}
                 prevStates={prevStates}

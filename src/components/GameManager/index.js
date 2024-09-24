@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import Box from '@mui/material/Box';
 import PropTypes from 'prop-types';
 import { Stomp } from '@stomp/stompjs';
@@ -9,7 +9,15 @@ import StartOptions from './StartOptions';
 import DrawingBoard from '../DrawingBoard';
 import { PICTIONARY_GAME_STATES, PICTIONARY_START_STATE } from '../../constant/room';
 
-const GameManager = ( { roomCode, isHost, stompClient, setGameUpdateHandler, setRoomUpdateHandler } ) => {
+const GameManager = ({ 
+    roomCode,
+    userId, 
+    isHost, 
+    stompClient, 
+    setGameUpdateHandler, 
+    setRoomUpdateHandler,
+    setAddOnComponent1Renderer,
+}) => {
 
     const segment = useStoreState(state => state.drawing.segment);
     const lastDrawn = useStoreState(state => state.drawing.lastDrawn);
@@ -27,7 +35,7 @@ const GameManager = ( { roomCode, isHost, stompClient, setGameUpdateHandler, set
     const {
         sendPictionaryUpdateMessage,
         sendRoomUpdateMessage,
-    } = useGameManager( {roomCode, stompClient, setPictionaryGameState, setRoomUpdateHandler} );
+    } = useGameManager( {roomCode, userId, stompClient, setPictionaryGameState, setRoomUpdateHandler} );
 
     const renderGameState = () => {
         switch (pictionaryGameState) {
@@ -44,6 +52,7 @@ const GameManager = ( { roomCode, isHost, stompClient, setGameUpdateHandler, set
                     <DrawingBoard
                         width={600}
                         height={600}
+                        userId={userId}
                         segment={segment}
                         lastDrawn={lastDrawn}
                         prevStates={prevStates}
@@ -54,7 +63,6 @@ const GameManager = ( { roomCode, isHost, stompClient, setGameUpdateHandler, set
                         undoDrawing={undoDrawing}
                         addFloodFill={addFloodFill}
                         deleteDrawing={deleteDrawing}
-                        canDraw={isHost}
                         sendPictionaryUpdateMessage={sendPictionaryUpdateMessage}
                         setGameUpdateHandler={setGameUpdateHandler}
                     />
@@ -70,6 +78,17 @@ const GameManager = ( { roomCode, isHost, stompClient, setGameUpdateHandler, set
         }
     };
 
+    const renderGuessSection = useCallback(() => {
+        return (
+            <>
+            </>
+        );
+    }, []);
+
+    useEffect(() => {
+        setAddOnComponent1Renderer(() => renderGuessSection);
+    }, [renderGuessSection, setAddOnComponent1Renderer]);
+    
     return (
         <Box 
             sx={{
@@ -88,10 +107,12 @@ const GameManager = ( { roomCode, isHost, stompClient, setGameUpdateHandler, set
 
 GameManager.propTypes = {
     roomCode: PropTypes.string.isRequired,
+    userId: PropTypes.string.isRequired,
     isHost: PropTypes.bool.isRequired,
     stompClient: PropTypes.instanceOf(Stomp.client).isRequired,
     setGameUpdateHandler: PropTypes.func.isRequired,
     setRoomUpdateHandler: PropTypes.func.isRequired,
+    setAddOnComponent1Renderer: PropTypes.func.isRequired,
 };
 
 export default GameManager;

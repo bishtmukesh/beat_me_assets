@@ -1,15 +1,15 @@
 import { action } from 'easy-peasy';
 
 const roomChatModel = {
-  chats: [],
+    chats: [],
   
-  addChat: action((state, newChat) => {
-    state.chats.push(newChat);
-  }),
+    addChat: action((state, newChat) => {
+        state.chats.push(newChat);
+    }),
   
-  clearChats: action((state) =>  {
-    state.chats = [];
-  }),
+    clearChats: action((state) =>  {
+        state.chats = [];
+    }),
 };
 
 export default roomChatModel;

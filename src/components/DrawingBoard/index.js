@@ -1,5 +1,8 @@
-import React, { useRef, useEffect, useMemo, useState } from 'react';
+import React, { useRef, useEffect, useMemo, useState, useCallback } from 'react';
 import Box from '@mui/material/Box';
+import TextField from '@mui/material/TextField';
+import Button from '@mui/material/Button';
+import SendIcon from '@mui/icons-material/Send';
 import PropTypes from 'prop-types';
 
 import './index.css';
@@ -10,6 +13,7 @@ import { TOOL_TYPES } from '../../constant/drawingBoard';
 const DrawingBoard = ({
     width, 
     height, 
+    userId,
     segment,
     lastDrawn,
     prevStates,
@@ -20,7 +24,6 @@ const DrawingBoard = ({
     undoDrawing,
     addFloodFill,
     deleteDrawing,
-    canDraw,
     sendPictionaryUpdateMessage,
     setGameUpdateHandler,
 }) => {
@@ -29,6 +32,24 @@ const DrawingBoard = ({
     const boxRef = useRef(null);
 
     const [canvasSize, setCanvasSizse] = useState(100);
+    const [guess, setGuess] = useState('');
+
+    const {
+        handleMouseDown,
+        handleMouseMove,
+        handleMouseEnter,
+        handleMouseUp,
+        handleUndo,
+        handleDelete,
+        pencilSize,
+        setPencilSize,
+        drawingColor,
+        setDrawingColor,
+        selectedTool,
+        setSelectedTool,
+        canDraw,
+    } = useDrawingBoard( { canvasSize, canvasRef, userId, segment, lastDrawn, prevStates, updateLastDrawn, updateSegment, endSegment, saveBoardState, 
+                           undoDrawing, addFloodFill, deleteDrawing, sendPictionaryUpdateMessage, setGameUpdateHandler } );
 
     useEffect(() => {
         deleteDrawing();
@@ -45,34 +66,27 @@ const DrawingBoard = ({
 
             setCanvasSizse(Math.min(width, height));
         }
-    }, [canvasRef, boxRef]);
-
-    const {
-        handleMouseDown,
-        handleMouseMove,
-        handleMouseEnter,
-        handleMouseUp,
-        handleUndo,
-        handleDelete,
-        pencilSize,
-        setPencilSize,
-        drawingColor,
-        setDrawingColor,
-        selectedTool,
-        setSelectedTool,
-    } = useDrawingBoard( { canvasSize, canvasRef, segment, lastDrawn, prevStates, updateLastDrawn, updateSegment, endSegment, saveBoardState, 
-                           undoDrawing, addFloodFill, deleteDrawing, canDraw, sendPictionaryUpdateMessage, setGameUpdateHandler } );
+    }, [canvasRef, boxRef, canDraw]);
 
     const cursorClass = useMemo(() => {
-        switch (selectedTool) {
-            case TOOL_TYPES.PENCIL:
-                return 'pencilCursor';
-            case TOOL_TYPES.FLOOD_FILL:
-                return 'fillCursor';
-            default:
-                return 'defaultCursor';
+        if (canDraw) {
+            switch (selectedTool) {
+                case TOOL_TYPES.PENCIL:
+                    return 'pencilCursor';
+                case TOOL_TYPES.FLOOD_FILL:
+                    return 'fillCursor';
+                default:
+                    return 'defaultCursor';
+            }
+        } else {
+            return 'defaultCursor';
         }
-    }, [selectedTool]);
+    }, [selectedTool, canDraw]);
+
+    const handleGuess = useCallback(() => {
+        console.log("User guesses -> " + guess);
+        setGuess('');
+    }, [guess, setGuess]);
 
     return (
         <Box 
@@ -85,7 +99,8 @@ const DrawingBoard = ({
                 flexDirection: 'column',
                 alignItems: 'center', 
                 justifyContent: 'center',
-                border: '1px solid black',
+                paddingTop: '30px',
+                paddingBottom: '30px',
             }}
         >
             <canvas 
@@ -99,18 +114,58 @@ const DrawingBoard = ({
                 onMouseUp={handleMouseUp}
             />
 
-            <DrawingControls 
-                width={canvasSize}
-                height={height} 
-                handleUndo={handleUndo}
-                handleDelete={handleDelete}
-                pencilSize={pencilSize}
-                setPencilSize={setPencilSize}
-                drawingColor={drawingColor}
-                setDrawingColor={setDrawingColor}
-                selectedTool={selectedTool}
-                setSelectedTool={setSelectedTool}
-            />
+            {canDraw && ( 
+                <DrawingControls 
+                    width={canvasSize}
+                    height={height} 
+                    handleUndo={handleUndo}
+                    handleDelete={handleDelete}
+                    pencilSize={pencilSize}
+                    setPencilSize={setPencilSize}
+                    drawingColor={drawingColor}
+                    setDrawingColor={setDrawingColor}
+                    selectedTool={selectedTool}
+                    setSelectedTool={setSelectedTool}
+                />
+            )}
+
+            {!canDraw && (
+                <Box
+                    sx={{
+                        marginTop: '10px',
+                        width: `${canvasSize}px`,
+                        display: 'flex',
+                        gap: 2,
+                    }}
+                >
+                    <TextField
+                        variant="outlined"
+                        placeholder="Enter your guess"
+                        value={guess}
+                        onChange={(event) => setGuess(event.target.value)}
+                        onKeyDown={(event) => {
+                            if (event.key === 'Enter') {
+                                handleGuess();
+                            }
+                        }}
+
+                        sx={{
+                            flex: '1',
+                        }}
+                    />
+
+                    <Button
+                        variant="contained"
+                        color="primary"
+                        endIcon={<SendIcon />}
+                        onClick={handleGuess}
+                    >
+                        Guess
+                    </Button>
+
+                </Box>
+            )}
+
         </Box>
     );
 }
@@ -118,6 +173,7 @@ const DrawingBoard = ({
 DrawingBoard.propTypes = {
     width: PropTypes.number.isRequired,
     height: PropTypes.number.isRequired,
+    userId: PropTypes.string.isRequired,
     segment: PropTypes.array.isRequired,
     lastDrawn: PropTypes.number.isRequired, 
     prevStates: PropTypes.array.isRequired,
@@ -128,7 +184,6 @@ DrawingBoard.propTypes = {
     undoDrawing: PropTypes.func.isRequired,
     addFloodFill: PropTypes.func.isRequired,
     deleteDrawing: PropTypes.func.isRequired,
-    canDraw: PropTypes.bool.isRequired,
     sendPictionaryUpdateMessage: PropTypes.func.isRequired,
     setGameUpdateHandler: PropTypes.func.isRequired,
 };

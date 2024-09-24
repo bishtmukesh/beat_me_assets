@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import PropTypes from 'prop-types';
 
 import { DEFAULT_DRAWING_COLOR, DEFAULT_PENCIL_SIZE, DEFAULT_TOOL, DRAWING_UPDATE_TYPES, 
@@ -11,6 +11,7 @@ import { scalePoint } from '../../utils/scale';
 const useDrawingBoard = ({ 
     canvasSize,
     canvasRef,
+    userId,
     lastDrawn,
     segment,
     prevStates,
@@ -21,7 +22,6 @@ const useDrawingBoard = ({
     undoDrawing,
     addFloodFill,
     deleteDrawing, 
-    canDraw,
     sendPictionaryUpdateMessage,
     setGameUpdateHandler,
 }) => {
@@ -32,6 +32,12 @@ const useDrawingBoard = ({
 
     const [networkPencilSize, setNetworkPencilSize] = useState(DEFAULT_PENCIL_SIZE);
     const [networkDrawingColor, setNetworkDrawingColor] = useState(DEFAULT_DRAWING_COLOR);
+
+    const [userToDraw, setUserToDraw] = useState(null);
+
+    const canDraw = useMemo(() => {
+        return userToDraw ? userToDraw === userId ? true : false : false;
+    }, [userToDraw]);
 
     const getImageData = useCallback(() => {
         if (canvasRef.current !== null) {
@@ -174,6 +180,10 @@ const useDrawingBoard = ({
                     quickFill(scaledPoint, fillColor);
                     saveBoardState(getImageData());
                 }
+            } else if (message.updateType === DRAWING_UPDATE_TYPES.ALLOW_DRAW) {
+                if (message.userToDraw) {
+                    setUserToDraw(message.userToDraw);
+                }
             }
         }
     }, [, canvasRef, canvasSize, deleteDrawing, endSegment, undo, updateSegment, networkDrawingColor, networkPencilSize, addFloodFill, quickFill, saveBoardState, getImageData]);
@@ -193,6 +203,7 @@ const useDrawingBoard = ({
         setDrawingColor,
         selectedTool,
         setSelectedTool,
+        canDraw,
     };
 }
 
@@ -201,6 +212,7 @@ useDrawingBoard.propTypes = {
     canvasRef: PropTypes.shape({
         current: PropTypes.instanceOf(Element)
     }),
+    userId: PropTypes.string.isRequired,
     segment: PropTypes.array.isRequired,
     lastDrawn: PropTypes.number.isRequired, 
     prevStates: PropTypes.array.isRequired,
@@ -211,7 +223,6 @@ useDrawingBoard.propTypes = {
     undoDrawing: PropTypes.func.isRequired,
     addFloodFill: PropTypes.func.isRequired,
     deleteDrawing: PropTypes.func.isRequired,
-    canDraw: PropTypes.bool.isRequired,
     sendPictionaryUpdateMessage: PropTypes.func.isRequired,
     setGameUpdateHandler: PropTypes.func.isRequired,
 };

@@ -1,32 +1,43 @@
-import React from 'react';
+import React, {useEffect} from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { useStoreActions } from 'easy-peasy';
 
 import './App.css';
 import Footer from './components/Footer';
 import Header from './components/Header';
 import HomePage from './pages/HomePage';
+import Login from './pages/Login';
 import Room from './pages/Room';
 
 import TestPage  from './pages/TestPage';
+import Account from './pages/Account';
 
 function App() {
   
-  return (
-    <div className="App">
-      <Router>
-        <Header />
-        <div className="content">
-          <Routes>
-              <Route path="/" element={<HomePage />} />
-              <Route path="/test" element={<TestPage />} />
-              <Route path="/room/:roomCode" element={<Room />} />
-              <Route path="*" element={<h2>404 Not Found</h2>} />
-          </Routes>
-        </div>
-      </Router>
-      <Footer />
-    </div>
-  );
+  	const fetchUserAuthenticationStatus = useStoreActions((actions) => actions.userAuth.fetchUserAuthenticationStatus);
+
+  	useEffect(() => {
+    	fetchUserAuthenticationStatus();
+  	}, [fetchUserAuthenticationStatus]);
+
+  	return (
+    	<div className="App">
+			<Router>
+				<Header />
+				<div className="content">
+					<Routes>
+						<Route path="/" element={<HomePage />} />
+						<Route path="/login" element={<Login/>} />
+						<Route path="/account" element={<Account />} />
+						<Route path="/test" element={<TestPage />} />
+						<Route path="/room/:roomCode" element={<Room />} />
+						<Route path="*" element={<h2>404 Not Found</h2>} />
+					</Routes>
+				</div>
+			</Router>
+			<Footer />
+    	</div>
+  	);
 }
 
 export default App;
