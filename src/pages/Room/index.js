@@ -33,7 +33,8 @@ const Room = () => {
 
     const {
         connected,
-        subscribed,
+        roomSubscribed,
+        privateEndpointConnected,
         userId,
         hostUserId,
         isHost,
@@ -46,7 +47,7 @@ const Room = () => {
 
     return (
         <Container className="room">
-            {connected && subscribed && (
+            {connected && roomSubscribed && privateEndpointConnected && (
                 <>
                     <Grid container spacing={2}>
 

@@ -10,6 +10,7 @@ import { useStoreState } from 'easy-peasy';
 
 import Loader from '../../components/Loader';
 import useLogin from './useLogin';
+import { ACCOUNT_PAGE_URL } from '../../constant/url';
 
 const Login = () => {
 
@@ -18,7 +19,7 @@ const Login = () => {
 
     useEffect(() => {
         if (isUserAuthenticated) {
-          navigate('/account');
+          navigate(ACCOUNT_PAGE_URL);
         }
     }, [isUserAuthenticated, navigate]);
 

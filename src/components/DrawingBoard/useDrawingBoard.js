@@ -34,10 +34,11 @@ const useDrawingBoard = ({
     const [networkDrawingColor, setNetworkDrawingColor] = useState(DEFAULT_DRAWING_COLOR);
 
     const [userToDraw, setUserToDraw] = useState(null);
+    const [wordToDraw, setWordToDraw] = useState('Parrot');
 
     const canDraw = useMemo(() => {
         return userToDraw ? userToDraw === userId ? true : false : false;
-    }, [userToDraw]);
+    }, [userToDraw, userId]);
 
     const getImageData = useCallback(() => {
         if (canvasRef.current !== null) {
@@ -116,7 +117,7 @@ const useDrawingBoard = ({
 
     const handleUndo = useCallback(() => {
         if (canDraw) {
-            sendPictionaryUpdateMessage(DRAWING_UPDATE_TYPES.UNDO);
+            sendPictionaryUpdateMessage({ updateType : DRAWING_UPDATE_TYPES.UNDO });
             undo();
         }
     }, [undo, sendPictionaryUpdateMessage, canDraw]);
@@ -129,7 +130,7 @@ const useDrawingBoard = ({
             ctx.clearRect(0, 0,canvas.width, canvas.height);
             deleteDrawing(ctx.getImageData(0, 0, canvas.width, canvas.height));
 
-            sendPictionaryUpdateMessage(DRAWING_UPDATE_TYPES.DELETE);
+            sendPictionaryUpdateMessage({ updateType : DRAWING_UPDATE_TYPES.DELETE });
         }
     }, [deleteDrawing, canvasRef, sendPictionaryUpdateMessage, canDraw]);
 
@@ -184,9 +185,13 @@ const useDrawingBoard = ({
                 if (message.userToDraw) {
                     setUserToDraw(message.userToDraw);
                 }
+            } else if (message.updateType === DRAWING_UPDATE_TYPES.SET_GUESS_WORD) {
+                if (message.wordToDraw) {
+                    setWordToDraw(message.wordToDraw);
+                }
             }
         }
-    }, [, canvasRef, canvasSize, deleteDrawing, endSegment, undo, updateSegment, networkDrawingColor, networkPencilSize, addFloodFill, quickFill, saveBoardState, getImageData]);
+    }, [canvasRef, canvasSize, deleteDrawing, endSegment, undo, updateSegment, networkDrawingColor, networkPencilSize, addFloodFill, quickFill, saveBoardState, getImageData, setWordToDraw]);
 
     setGameUpdateHandler(handleGameUpdate);
 
@@ -204,6 +209,7 @@ const useDrawingBoard = ({
         selectedTool,
         setSelectedTool,
         canDraw,
+        wordToDraw,
     };
 }
 

@@ -50,4 +50,6 @@ export const DRAWING_UPDATE_TYPES = {
     END_SEGMENT: 'end_segment',
     ADD_FLOOD_FILL: "add_flood_fill",
     ALLOW_DRAW: 'allow_draw',
+    SET_GUESS_WORD: 'set_guess_word',
+    GUESS_WORD: 'guess_word',
 };

@@ -8,7 +8,7 @@ import PropTypes from 'prop-types';
 import './index.css';
 import useDrawingBoard from './useDrawingBoard';
 import DrawingControls from '../DrawingControls';
-import { TOOL_TYPES } from '../../constant/drawingBoard';
+import { DRAWING_UPDATE_TYPES, TOOL_TYPES } from '../../constant/drawingBoard';
 
 const DrawingBoard = ({
     width, 
@@ -48,6 +48,7 @@ const DrawingBoard = ({
         selectedTool,
         setSelectedTool,
         canDraw,
+        wordToDraw,
     } = useDrawingBoard( { canvasSize, canvasRef, userId, segment, lastDrawn, prevStates, updateLastDrawn, updateSegment, endSegment, saveBoardState, 
                            undoDrawing, addFloodFill, deleteDrawing, sendPictionaryUpdateMessage, setGameUpdateHandler } );
 
@@ -85,8 +86,10 @@ const DrawingBoard = ({
 
     const handleGuess = useCallback(() => {
         console.log("User guesses -> " + guess);
+        
+        sendPictionaryUpdateMessage({ updateType : DRAWING_UPDATE_TYPES.GUESS_WORD, guessedWord : guess });
         setGuess('');
-    }, [guess, setGuess]);
+    }, [guess, setGuess, sendPictionaryUpdateMessage]);
 
     return (
         <Box 
@@ -115,18 +118,21 @@ const DrawingBoard = ({
             />
 
             {canDraw && ( 
-                <DrawingControls 
-                    width={canvasSize}
-                    height={height} 
-                    handleUndo={handleUndo}
-                    handleDelete={handleDelete}
-                    pencilSize={pencilSize}
-                    setPencilSize={setPencilSize}
-                    drawingColor={drawingColor}
-                    setDrawingColor={setDrawingColor}
-                    selectedTool={selectedTool}
-                    setSelectedTool={setSelectedTool}
-                />
+                <>
+                    <DrawingControls 
+                        width={canvasSize}
+                        height={height} 
+                        handleUndo={handleUndo}
+                        handleDelete={handleDelete}
+                        pencilSize={pencilSize}
+                        setPencilSize={setPencilSize}
+                        drawingColor={drawingColor}
+                        setDrawingColor={setDrawingColor}
+                        selectedTool={selectedTool}
+                        setSelectedTool={setSelectedTool}
+                    />
+                    Draw - {wordToDraw}
+                </>
             )}
 
             {!canDraw && (

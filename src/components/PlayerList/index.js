@@ -1,6 +1,5 @@
 import React from 'react';
 import { MdPerson } from 'react-icons/md';
-import Box from '@mui/material/Box';
 import Paper from '@mui/material/Paper';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
@@ -63,7 +62,7 @@ const PlayerList = ( { players, userId, hostUserId } ) => {
                                     setSelectedIconNumber={null}
                                     width={50}
                                     height={50}
-                                    allowSelection={true}
+                                    allowSelection={false}
                                 />
                             }
                             <ListItemText sx={{ paddingLeft: '5px' }} primary={player.userName || UNKNOWN_USERNAME} />

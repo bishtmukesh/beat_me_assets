@@ -53,10 +53,8 @@ const RoomOptions = () => {
 
     const validateRoomCodeInput = useCallback(() => {
         if (typeof roomCode === 'string') {
-            console.log("Is string");
             return roomCode.length === 4;
         } else {
-            console.log("Not a string");
             return false;
         }
     }, [roomCode]);

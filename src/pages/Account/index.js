@@ -3,6 +3,7 @@ import Container from '@mui/material/Container';
 import Typography from '@mui/material/Typography';
 import { useStoreState } from 'easy-peasy';
 import { useNavigate } from 'react-router-dom';
+import { LOGIN_PAGE_URL } from '../../constant/url';
 //import PropTypes from 'prop-types';
 
 const Account = () => {
@@ -15,7 +16,7 @@ const Account = () => {
 
     useEffect(() => {
         if (!isUserAuthenticated) {
-          navigate('/login');
+          navigate(LOGIN_PAGE_URL);
         }
     }, [isUserAuthenticated, navigate]);
 

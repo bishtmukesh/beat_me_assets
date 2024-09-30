@@ -5,18 +5,23 @@ import Toolbar from '@mui/material/Toolbar';
 import Typography from '@mui/material/Typography';
 import IconButton from '@mui/material/IconButton';
 import MenuIcon from '@mui/icons-material/Menu';
+import HomeIcon from '@mui/icons-material/Home';
 import AccountCircle from '@mui/icons-material/AccountCircle';
 import { useNavigate } from 'react-router-dom';
 
 import { BRAND_NAME } from '../../constant/app';
-import { LOGIN_PAGE_URL } from '../../constant/url';
+import { HOME_PAGE_URL, LOGIN_PAGE_URL } from '../../constant/url';
 
 export default function ButtonAppBar() {
 
     const navigate = useNavigate();
 
-    const handleRedirect = useCallback(() => {
+    const handleLoginRedirect = useCallback(() => {
         navigate(LOGIN_PAGE_URL);
+    }, [navigate]);
+
+    const handleHomeRedirect = useCallback(() => {
+        navigate(HOME_PAGE_URL);
     }, [navigate]);
 
     return (
@@ -33,16 +38,24 @@ export default function ButtonAppBar() {
                         <MenuIcon />
                     </IconButton>
                     
+                    <HomeIcon
+                        onClick={handleHomeRedirect}
+                        sx={{
+                            cursor: 'pointer',
+                        }}
+                    />
+
                     <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
                         {BRAND_NAME}
                     </Typography>
 
                     <AccountCircle
-                        onClick={handleRedirect}
+                        onClick={handleLoginRedirect}
                         sx={{
                             cursor: 'pointer',
                         }}
                     />
+
                 </Toolbar>
             </AppBar>
         </Box>

@@ -2,9 +2,12 @@ export const SERVER_BASE_URL = "http://localhost:8080";
 export const TEST_API_BASE_URL = "/test";
 export const API_BASE_URL = "/beatMe";
 
-// login/register
+export const HOME_PAGE_URL = '/';
+
+// login / register
 export const LOGIN_PAGE_URL = '/login';
 export const REGISTER_PAGE_URL = '/register';
+export const ACCOUNT_PAGE_URL = '/account';
 
 export const SERVER_LOGIN_ENDPOINT = `${API_BASE_URL}/login`;
 export const SERVER_REGISTER_ENDPOINT = `${API_BASE_URL}/register`;
@@ -12,7 +15,8 @@ export const FETCH_AUTHENTICATION_STATUS_ENDPOINT = `${API_BASE_URL}/fetch_authe
 
 // Socket endpoints
 export const STOMP_ENDPONT = "/room";
-export const ROOM_SUBSCRIPTION_PRIFIX = "/room";
+export const ROOM_SUBSCRIPTION_PREFIX = "/room";
+export const PRIVATE_ENDPOINT_SUBSCRIPTION_PREFIX = "/user";
 export const SERVER_CHAT_ENDPOINT = "/message/chat";
 export const SERVER_SUB_CONFIRMATION_ENDPOINT = "/message/confirmation";
 

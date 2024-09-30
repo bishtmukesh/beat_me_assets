@@ -4,7 +4,7 @@ import { Stomp } from '@stomp/stompjs';
 import PropTypes from 'prop-types';
 import { useStoreActions } from 'easy-peasy';
 
-import { SERVER_BASE_URL, STOMP_ENDPONT, SERVER_CHAT_ENDPOINT, ROOM_SUBSCRIPTION_PRIFIX, SERVER_SUB_CONFIRMATION_ENDPOINT } from '../../constant/url';
+import { SERVER_BASE_URL, STOMP_ENDPONT, SERVER_CHAT_ENDPOINT, ROOM_SUBSCRIPTION_PREFIX, SERVER_SUB_CONFIRMATION_ENDPOINT, PRIVATE_ENDPOINT_SUBSCRIPTION_PREFIX } from '../../constant/url';
 import { MESSAGE_TYPES } from '../../constant/room';
  
 const useRoom = ( { roomCode, userName, selectedIconNumber } ) => {
@@ -14,7 +14,8 @@ const useRoom = ( { roomCode, userName, selectedIconNumber } ) => {
 
     const [stompClient, setStompClient] = useState(null);
     const [connected, setConnected] = useState(false);
-    const [subscribed, setSubscribed] = useState(false);
+    const [roomSubscribed, setRoomSubscribed] = useState(false);
+    const [privateEndpointConnected, setPrivateEndpointConnected] = useState(false);
 
     const [players, setPlayers] = useState([]);
     const [userId, setUserId] = useState(null);
@@ -38,16 +39,21 @@ const useRoom = ( { roomCode, userName, selectedIconNumber } ) => {
         console.log("The userId is - " + sessionId);    
     };
 
-    const onConnectionError = (error) => {
-        console.error("Error connecting to stomp endpoint - ", error);
+    const resetConnections = () => {
         setUserId(null);
         setConnected(false);
+        setRoomSubscribed(false);
+        setPrivateEndpointConnected(false);
+    }
+
+    const onConnectionError = (error) => {
+        console.error("Error connecting to stomp endpoint - ", error);
+        resetConnections();
     };
 
     const handleDisconnection = () => {
         console.log('Socket connection closed.');
-        setUserId(null);
-        setConnected(false);
+        resetConnections();
     };
 
     const handleGameUpdateMessage  = useCallback((message) => {
@@ -95,31 +101,48 @@ const useRoom = ( { roomCode, userName, selectedIconNumber } ) => {
                 handleRoomUpdateMessage(message);
             }
         }
-    }, [addChat, userId, handleGameUpdateMessage]);
+    }, [addChat, userId, handleGameUpdateMessage, handleRoomUpdateMessage]);
 
     const handleSubscriptionError = useCallback ((error, subscriptionEndpoint) => {
         console.error('Error while trying to subscribe to room - ' + subscriptionEndpoint + " -> ", error);
-        setSubscribed(false);
-    }, []);
+        setRoomSubscribed(false);
+    }, [setRoomSubscribed]);
+
+    const handlePrivateEndpointSubscriptionError = useCallback ((error, subscriptionEndpoint) => {
+        console.error('Error while trying to subscribe to private endpoint - ' + subscriptionEndpoint + " -> ", error);
+        setPrivateEndpointConnected(false);
+    }, [setPrivateEndpointConnected]);
 
     const sendSubscriptionConfirmation =  useCallback(() => {
-        if (stompClient && stompClient.connected && subscribed) {
+        if (stompClient && stompClient.connected && roomSubscribed && privateEndpointConnected) {
             stompClient.send(SERVER_SUB_CONFIRMATION_ENDPOINT, {}, JSON.stringify({ from: userName, roomCode }));
         }
-    }, [roomCode, stompClient, subscribed, userName]);
+    }, [roomCode, stompClient, roomSubscribed, privateEndpointConnected, userName]);
 
     const subscribeToRoom = useCallback((client, roomCode) => {
-            const subscriptionEndpoint = ROOM_SUBSCRIPTION_PRIFIX.concat('/', roomCode);
+            const subscriptionEndpoint = ROOM_SUBSCRIPTION_PREFIX.concat('/', roomCode);
 
             const subscription = client.subscribe(subscriptionEndpoint, messageOutput => {
                 handleMessageReceived(messageOutput, subscriptionEndpoint);
             }, handleSubscriptionError);
 
             if (subscription) {
-                setSubscribed(true);
-                sendSubscriptionConfirmation();
+                setRoomSubscribed(true);
             }
-    }, [handleMessageReceived, sendSubscriptionConfirmation, handleSubscriptionError]);
+    }, [handleMessageReceived, handleSubscriptionError, setRoomSubscribed]);
+
+    const subscribeToPrivateEndpoint = useCallback((client) => {
+        const subscriptionEndpoint = PRIVATE_ENDPOINT_SUBSCRIPTION_PREFIX.concat('/', userId);
+
+        const subscription = client.subscribe(subscriptionEndpoint, messageOutput => {
+            handleMessageReceived(messageOutput, subscriptionEndpoint);
+        }, handlePrivateEndpointSubscriptionError);
+
+        if (subscription) {
+            setPrivateEndpointConnected(true);
+          
+        }
+    }, [handleMessageReceived, handlePrivateEndpointSubscriptionError, setPrivateEndpointConnected]);
 
     useEffect(() => {
         clearChats();
@@ -144,16 +167,17 @@ const useRoom = ( { roomCode, userName, selectedIconNumber } ) => {
     }, [userName, selectedIconNumber, clearChats]);
 
     useEffect(() => {
-        if (stompClient && connected && !subscribed) {
+        if (stompClient && connected) {
             subscribeToRoom(stompClient, roomCode);
+            subscribeToPrivateEndpoint(stompClient);
         }
-    }, [stompClient, connected, roomCode, subscribed, subscribeToRoom]);
+    }, [stompClient, connected, roomCode, subscribeToRoom, subscribeToPrivateEndpoint]);
 
     useEffect(() => {
-        if (subscribed) {
+        if (roomSubscribed && privateEndpointConnected) {
             sendSubscriptionConfirmation();
         }
-    }, [subscribed, sendSubscriptionConfirmation]);
+    }, [roomSubscribed, privateEndpointConnected, sendSubscriptionConfirmation]);
 
     const sendMessage = useCallback((message) => {
         if (stompClient && stompClient.connected) {
@@ -163,7 +187,8 @@ const useRoom = ( { roomCode, userName, selectedIconNumber } ) => {
 
     return {
         connected,
-        subscribed,
+        roomSubscribed,
+        privateEndpointConnected,
         userId,
         hostUserId,
         isHost,

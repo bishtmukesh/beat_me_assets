@@ -40,7 +40,7 @@ const useMouseEvents = ({
             if (isOutside) {
                 setIsInside(false);
                 updateSegment({x, y});
-                sendPictionaryUpdateMessage(DRAWING_UPDATE_TYPES.ADD_TO_SEGMENT, unscalePoint(x, y, canvasSize));
+                sendPictionaryUpdateMessage({ udpateType : DRAWING_UPDATE_TYPES.ADD_TO_SEGMENT, point : unscalePoint(x, y, canvasSize) });
             }
         }
     }, [canvasRef, canvasSize, isMouseDown, isInside, setIsInside, updateSegment, sendPictionaryUpdateMessage]);
@@ -57,7 +57,7 @@ const useMouseEvents = ({
                 const y = event.clientY - canvasRect.top;
 
                 updateSegment({x, y});
-                sendPictionaryUpdateMessage(DRAWING_UPDATE_TYPES.ADD_TO_SEGMENT, unscalePoint(x, y, canvasSize));
+                sendPictionaryUpdateMessage({ updateType : DRAWING_UPDATE_TYPES.ADD_TO_SEGMENT, point : unscalePoint(x, y, canvasSize) });
             }
         }
     }, [canvasRef, canvasSize, canDraw, isMouseDown, selectedTool, updateSegment, sendPictionaryUpdateMessage]);
@@ -75,12 +75,13 @@ const useMouseEvents = ({
             
             if (selectedTool === TOOL_TYPES.PENCIL) {
                 updateSegment({x, y});
-                sendPictionaryUpdateMessage(DRAWING_UPDATE_TYPES.ADD_TO_SEGMENT, unscalePoint(x, y, canvasSize), drawingColor, pencilSize);
+                sendPictionaryUpdateMessage({ updateType : DRAWING_UPDATE_TYPES.ADD_TO_SEGMENT, point : unscalePoint(x, y, canvasSize), 
+                                              drawingColor, pencilSize });
             } else if (selectedTool === TOOL_TYPES.FLOOD_FILL) {
                 addFloodFill({startPoint : {x, y}, drawingColor});
                 quickFill({x, y}, drawingColor);
                 saveBoardState(getImageData());
-                sendPictionaryUpdateMessage(DRAWING_UPDATE_TYPES.ADD_FLOOD_FILL, unscalePoint(x, y, canvasSize), drawingColor);
+                sendPictionaryUpdateMessage({ updateType : DRAWING_UPDATE_TYPES.ADD_FLOOD_FILL, point : unscalePoint(x, y, canvasSize), drawingColor });
             }
         }
     }, [canvasRef, canvasSize, setIsMouseDown, canDraw, pencilSize, selectedTool, drawingColor, updateSegment, 
@@ -94,7 +95,7 @@ const useMouseEvents = ({
         if (selectedTool === TOOL_TYPES.PENCIL) {
             endSegment({pencilSize, drawingColor});
             saveBoardState(getImageData());
-            sendPictionaryUpdateMessage(DRAWING_UPDATE_TYPES.END_SEGMENT);
+            sendPictionaryUpdateMessage({ updateType : DRAWING_UPDATE_TYPES.END_SEGMENT });
         }
     }, [setIsMouseDown, canDraw, selectedTool, drawingColor, pencilSize, endSegment, sendPictionaryUpdateMessage, getImageData, saveBoardState]);
 
