@@ -17,12 +17,7 @@ export const GAME_STATES = {
     // Entered the selected game
 }
 
-export const PICTIONARY_GAME_STATES = {
-    GAME_READY: "game_ready",
-    GAME_STARTED: "game_started",
-}
-export const PICTIONARY_START_STATE = PICTIONARY_GAME_STATES.GAME_READY;
-
 export const ROOM_UPDATE_TYPES = {
     START: 'start',
+    ROOM_INFO: 'room_info',
 };

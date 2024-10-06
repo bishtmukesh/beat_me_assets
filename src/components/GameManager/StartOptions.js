@@ -4,7 +4,9 @@ import Button from '@mui/material/Button';
 import PlayArrowIcon from '@mui/icons-material/PlayArrow';
 import Typography from '@mui/material/Typography';
 import PropTypes from 'prop-types';
-import { PICTIONARY_GAME_STATES, ROOM_UPDATE_TYPES } from '../../constant/room';
+
+import { PICTIONARY_GAME_STATES} from '../../constant/pictionary';
+import { ROOM_UPDATE_TYPES } from '../../constant/room';
 
 const StartOptions = ( { setPictionaryGameState, isHost, sendRoomUpdateMessage } ) => {
 

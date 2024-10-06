@@ -1,8 +1,9 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import PropTypes from 'prop-types';
 
-import { DEFAULT_DRAWING_COLOR, DEFAULT_PENCIL_SIZE, DEFAULT_TOOL, DRAWING_UPDATE_TYPES, 
+import { DEFAULT_DRAWING_COLOR, DEFAULT_PENCIL_SIZE, DEFAULT_TOOL, 
          LINE_CAP, LINE_JOIN, MAXIMUM_PENCIL_SIZE, MINIMUM_PENCIL_SIZE } from '../../constant/drawingBoard';
+import { PICTIONARY_UPDATE_TYPES } from '../../constant/pictionary';
 import { MESSAGE_TYPES } from '../../constant/room';
 import useMouseEvents from './useMouseEvents';
 import useFloodFill from './useFloodFill';
@@ -34,7 +35,7 @@ const useDrawingBoard = ({
     const [networkDrawingColor, setNetworkDrawingColor] = useState(DEFAULT_DRAWING_COLOR);
 
     const [userToDraw, setUserToDraw] = useState(null);
-    const [wordToDraw, setWordToDraw] = useState('Parrot');
+    const [wordToDraw, setWordToDraw] = useState('');
 
     const canDraw = useMemo(() => {
         return userToDraw ? userToDraw === userId ? true : false : false;
@@ -117,7 +118,7 @@ const useDrawingBoard = ({
 
     const handleUndo = useCallback(() => {
         if (canDraw) {
-            sendPictionaryUpdateMessage({ updateType : DRAWING_UPDATE_TYPES.UNDO });
+            sendPictionaryUpdateMessage({ updateType : PICTIONARY_UPDATE_TYPES.UNDO });
             undo();
         }
     }, [undo, sendPictionaryUpdateMessage, canDraw]);
@@ -130,7 +131,7 @@ const useDrawingBoard = ({
             ctx.clearRect(0, 0,canvas.width, canvas.height);
             deleteDrawing(ctx.getImageData(0, 0, canvas.width, canvas.height));
 
-            sendPictionaryUpdateMessage({ updateType : DRAWING_UPDATE_TYPES.DELETE });
+            sendPictionaryUpdateMessage({ updateType : PICTIONARY_UPDATE_TYPES.DELETE });
         }
     }, [deleteDrawing, canvasRef, sendPictionaryUpdateMessage, canDraw]);
 
@@ -143,7 +144,7 @@ const useDrawingBoard = ({
 
     const handleGameUpdate = useCallback((message) => {
         if(message.messageType === MESSAGE_TYPES.GAME_UPDATE) {
-            if (message.updateType === DRAWING_UPDATE_TYPES.DELETE) {
+            if (message.updateType === PICTIONARY_UPDATE_TYPES.DELETE) {
                 if (canvasRef.current !== null) {
                     const canvas = canvasRef.current;
                     const ctx = canvas.getContext("2d");
@@ -151,9 +152,9 @@ const useDrawingBoard = ({
                     ctx.clearRect(0, 0,canvas.width, canvas.height);
                     deleteDrawing(getImageData());
                 }
-            } else if (message.updateType === DRAWING_UPDATE_TYPES.UNDO) {
+            } else if (message.updateType === PICTIONARY_UPDATE_TYPES.UNDO) {
                 undo();
-            } else if (message.updateType === DRAWING_UPDATE_TYPES.ADD_TO_SEGMENT) {
+            } else if (message.updateType === PICTIONARY_UPDATE_TYPES.ADD_TO_SEGMENT) {
                 const point = message.point;
                 if (point && point.x && point.y) {
                     updateSegment(scalePoint(point.x, point.y, canvasSize));
@@ -169,10 +170,10 @@ const useDrawingBoard = ({
                 if (Number.isInteger(size) && (size >= MINIMUM_PENCIL_SIZE && size <= MAXIMUM_PENCIL_SIZE)) {
                     setNetworkPencilSize(size);
                 }
-            } else if (message.updateType === DRAWING_UPDATE_TYPES.END_SEGMENT) {
+            } else if (message.updateType === PICTIONARY_UPDATE_TYPES.END_SEGMENT) {
                 endSegment({ pencilSize: networkPencilSize, drawingColor: networkDrawingColor});
                 saveBoardState(getImageData());
-            } else if (message.updateType === DRAWING_UPDATE_TYPES.ADD_FLOOD_FILL) {
+            } else if (message.updateType === PICTIONARY_UPDATE_TYPES.ADD_FLOOD_FILL) {
                 const point = message.point;
                 const scaledPoint = scalePoint(point.x, point.y, canvasSize);
                 const fillColor = message.drawingColor;
@@ -181,11 +182,11 @@ const useDrawingBoard = ({
                     quickFill(scaledPoint, fillColor);
                     saveBoardState(getImageData());
                 }
-            } else if (message.updateType === DRAWING_UPDATE_TYPES.ALLOW_DRAW) {
+            } else if (message.updateType === PICTIONARY_UPDATE_TYPES.ALLOW_DRAW) {
                 if (message.userToDraw) {
                     setUserToDraw(message.userToDraw);
                 }
-            } else if (message.updateType === DRAWING_UPDATE_TYPES.SET_GUESS_WORD) {
+            } else if (message.updateType === PICTIONARY_UPDATE_TYPES.SET_GUESS_WORD) {
                 if (message.wordToDraw) {
                     setWordToDraw(message.wordToDraw);
                 }

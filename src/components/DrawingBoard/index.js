@@ -8,7 +8,8 @@ import PropTypes from 'prop-types';
 import './index.css';
 import useDrawingBoard from './useDrawingBoard';
 import DrawingControls from '../DrawingControls';
-import { DRAWING_UPDATE_TYPES, TOOL_TYPES } from '../../constant/drawingBoard';
+import { TOOL_TYPES } from '../../constant/drawingBoard';
+import { PICTIONARY_UPDATE_TYPES } from '../../constant/pictionary';
 
 const DrawingBoard = ({
     width, 
@@ -87,7 +88,7 @@ const DrawingBoard = ({
     const handleGuess = useCallback(() => {
         console.log("User guesses -> " + guess);
         
-        sendPictionaryUpdateMessage({ updateType : DRAWING_UPDATE_TYPES.GUESS_WORD, guessedWord : guess });
+        sendPictionaryUpdateMessage({ updateType : PICTIONARY_UPDATE_TYPES.GUESS_WORD, guessedWord : guess });
         setGuess('');
     }, [guess, setGuess, sendPictionaryUpdateMessage]);
 

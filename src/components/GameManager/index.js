@@ -7,7 +7,7 @@ import { useStoreState, useStoreActions } from 'easy-peasy';
 import useGameManager from './useGameManager';
 import StartOptions from './StartOptions';
 import DrawingBoard from '../DrawingBoard';
-import { PICTIONARY_GAME_STATES, PICTIONARY_START_STATE } from '../../constant/room';
+import { PICTIONARY_GAME_STATES, PICTIONARY_START_STATE } from '../../constant/pictionary';
 
 const GameManager = ({ 
     roomCode,

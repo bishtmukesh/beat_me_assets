@@ -42,14 +42,3 @@ export const TOOL_TYPES = {
 };
 
 export const DEFAULT_TOOL = TOOL_TYPES.PENCIL;
-
-export const DRAWING_UPDATE_TYPES = {
-    DELETE: 'delete',
-    UNDO: 'undo',
-    ADD_TO_SEGMENT: 'add_to_segment',
-    END_SEGMENT: 'end_segment',
-    ADD_FLOOD_FILL: "add_flood_fill",
-    ALLOW_DRAW: 'allow_draw',
-    SET_GUESS_WORD: 'set_guess_word',
-    GUESS_WORD: 'guess_word',
-};
