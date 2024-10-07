@@ -1,4 +1,4 @@
-export const SERVER_BASE_URL = "http://localhost:8080";
+export const SERVER_BASE_URL = "https://beatme.onrender.com";
 export const TEST_API_BASE_URL = "/test";
 export const API_BASE_URL = "/beatMe";
 
