@@ -1,4 +1,4 @@
-export const SERVER_BASE_URL = "http://localhost:8080";
+export const SERVER_BASE_URL = "https://ec2-13-232-88-163.ap-south-1.compute.amazonaws.com";
 export const TEST_API_BASE_URL = "/test";
 export const API_BASE_URL = "/beatMe";
 
