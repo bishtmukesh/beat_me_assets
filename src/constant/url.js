@@ -1,4 +1,4 @@
-export const SERVER_BASE_URL = "http://ec2-13-232-88-163.ap-south-1.compute.amazonaws.com:8080";
+export const SERVER_BASE_URL = "https://meet-arena-1101158841.ap-south-1.elb.amazonaws.com";
 export const TEST_API_BASE_URL = "/test";
 export const API_BASE_URL = "/beatMe";
 
